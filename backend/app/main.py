@@ -10,6 +10,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from dotenv import load_dotenv
+
 from app.db import init_db
 from app.market import PriceCache, create_market_data_source, create_stream_router
 from app.market.seed_prices import SEED_PRICES
@@ -18,6 +20,12 @@ from app.portfolio.snapshots import start_snapshot_loop
 from app.watchlist import router as watchlist_router
 
 logger = logging.getLogger(__name__)
+
+# Load the project-root .env file (OPENROUTER_API_KEY, LLM_MOCK, ...) before
+# the app is constructed so every call-time env read sees the values. Plain
+# load_dotenv() walks up from the working directory, so a backend started from
+# backend/ reads C:/.../DSeek_GSD_Finally/.env.
+load_dotenv()
 
 # Location of the SQLite database file (relative to the working directory).
 # Tests override this module attribute before booting the app.
