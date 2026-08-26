@@ -23,7 +23,10 @@ The market-data subsystem is already built and tested. The remaining work delive
   3. `GET /api/portfolio` reports cash balance, positions, total value, and unrealized P&L
   4. A buy order reduces cash and creates/updates a position; a sell order increases cash and rejects insufficient shares
   5. Adding and removing tickers updates the watchlist, and `GET /api/health` reports healthy
-**Plans**: TBD
+**Plans**: 3 plans
+- [ ] 01-01-PLAN.md — Database foundation + FastAPI wiring + health + SSE + read API (DB-01, DB-02, DB-03, PORT-01, WATCH-01)
+- [ ] 01-02-PLAN.md — Portfolio trading (buy/sell) + history snapshots (PORT-02, PORT-03, PORT-04)
+- [ ] 01-03-PLAN.md — Watchlist mutation add/remove (WATCH-02, WATCH-03)
 
 ### Phase 2: AI Chat Assistant
 **Goal**: A chat endpoint where the AI analyzes the portfolio and auto-executes trades and watchlist changes from natural language.
