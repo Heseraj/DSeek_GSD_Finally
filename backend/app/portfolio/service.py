@@ -108,39 +108,59 @@ def execute_trade(conn: sqlite3.Connection, price_cache: PriceCache, trade) -> d
         order_cost = round(price * trade.quantity, 2)
         now = datetime.now(timezone.utc).isoformat()
 
-        if trade.side != "buy":
-            # Sell-side execution arrives with PORT-03.
-            raise ValueError(f"Unsupported trade side: {trade.side}")
+        if trade.side == "buy":
+            if order_cost > cash_balance:
+                raise InsufficientCashError(
+                    f"Insufficient cash: order costs {order_cost:.2f} but cash is {cash_balance:.2f}"
+                )
 
-        if order_cost > cash_balance:
-            raise InsufficientCashError(
-                f"Insufficient cash: order costs {order_cost:.2f} but cash is {cash_balance:.2f}"
-            )
+            new_cash = round(cash_balance - order_cost, 2)
 
-        new_cash = round(cash_balance - order_cost, 2)
+            if position is None:
+                conn.execute(
+                    "INSERT INTO positions (id, user_id, ticker, quantity, avg_cost, updated_at) "
+                    "VALUES (?, ?, ?, ?, ?, ?)",
+                    (str(uuid.uuid4()), "default", ticker, trade.quantity, price, now),
+                )
+            else:
+                old_quantity = float(position["quantity"])
+                old_avg_cost = float(position["avg_cost"])
+                new_quantity = round(old_quantity + trade.quantity, 4)
+                new_avg_cost = round(
+                    (old_quantity * old_avg_cost + trade.quantity * price) / new_quantity, 4
+                )
+                conn.execute(
+                    "UPDATE positions SET quantity = ?, avg_cost = ?, updated_at = ? "
+                    "WHERE user_id = ? AND ticker = ?",
+                    (new_quantity, new_avg_cost, now, "default", ticker),
+                )
+        else:
+            owned_quantity = float(position["quantity"]) if position is not None else 0.0
+            if position is None or trade.quantity - owned_quantity > 1e-9:
+                raise InsufficientSharesError(
+                    f"Insufficient shares: order is for {trade.quantity} but owned is "
+                    f"{owned_quantity}"
+                )
+
+            new_cash = round(cash_balance + order_cost, 2)
+            new_quantity = round(owned_quantity - trade.quantity, 4)
+
+            if abs(new_quantity) < 1e-9:
+                conn.execute(
+                    "DELETE FROM positions WHERE user_id = ? AND ticker = ?",
+                    ("default", ticker),
+                )
+            else:
+                conn.execute(
+                    "UPDATE positions SET quantity = ?, updated_at = ? "
+                    "WHERE user_id = ? AND ticker = ?",
+                    (new_quantity, now, "default", ticker),
+                )
+
         conn.execute(
             "UPDATE users_profile SET cash_balance = ? WHERE id = ?",
             (new_cash, "default"),
         )
-
-        if position is None:
-            conn.execute(
-                "INSERT INTO positions (id, user_id, ticker, quantity, avg_cost, updated_at) "
-                "VALUES (?, ?, ?, ?, ?, ?)",
-                (str(uuid.uuid4()), "default", ticker, trade.quantity, price, now),
-            )
-        else:
-            old_quantity = float(position["quantity"])
-            old_avg_cost = float(position["avg_cost"])
-            new_quantity = round(old_quantity + trade.quantity, 4)
-            new_avg_cost = round(
-                (old_quantity * old_avg_cost + trade.quantity * price) / new_quantity, 4
-            )
-            conn.execute(
-                "UPDATE positions SET quantity = ?, avg_cost = ?, updated_at = ? "
-                "WHERE user_id = ? AND ticker = ?",
-                (new_quantity, new_avg_cost, now, "default", ticker),
-            )
 
         conn.execute(
             "INSERT INTO trades (id, user_id, ticker, side, quantity, price, executed_at) "
