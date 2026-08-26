@@ -17,7 +17,8 @@ import sqlite3
 import uuid
 from datetime import datetime, timezone
 
-import litellm  # noqa: F401  # used by the live branch in 02-03
+import litellm  # noqa: F401  # used by the live branch
+from pydantic import ValidationError
 
 from app.chat.prompts import SYSTEM_PROMPT, build_context
 from app.chat.schemas import (
@@ -81,11 +82,37 @@ async def generate_assistant_response(messages: list[dict]) -> str:
     monkeypatch.setenv it. In mock mode the canned proposal is returned through
     the same JSON-string shape as the live branch, keeping the caller's
     parse-to-execute path identical (CHAT-05).
+
+    The live branch (spec §9, RESEARCH code example) calls LiteLLM -> OpenRouter
+    with gpt-oss-120b pinned to Cerebras and structured outputs. The
+    cerebras-inference skill named by the spec does not exist locally; the §9
+    pattern is encoded directly (RESEARCH finding 3 / assumption A6).
     """
     if os.environ.get("LLM_MOCK"):
         return json.dumps(_mock_response(messages[-1]["content"]))
-    # Live LiteLLM branch lands in 02-03 Task 1; unreachable in mock-mode tests.
-    raise NotImplementedError("Live LLM branch arrives in 02-03")
+
+    response_format = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "chat_response",
+            "schema": ChatProposal.model_json_schema(),
+            "strict": True,
+        },
+    }
+    # RESEARCH Pitfall 2: providers that ignore json_schema silently return
+    # plain text; fall back to json_object when the model does not advertise
+    # response-schema support.
+    if not litellm.supports_response_schema(model="openrouter/openai/gpt-oss-120b"):
+        response_format = {"type": "json_object"}
+
+    response = await litellm.acompletion(
+        model="openrouter/openai/gpt-oss-120b",
+        messages=messages,
+        response_format=response_format,
+        extra_body={"provider": {"order": ["cerebras"], "allow_fallbacks": False}},
+        force_timeout=60,
+    )
+    return response.choices[0].message.content
 
 
 def _save_messages(
@@ -165,8 +192,36 @@ async def process_message(
         history = _load_history(conn)
         messages = build_messages(user_message, portfolio, watchlist, history)
 
-        content = await generate_assistant_response(messages)
-        proposal = ChatProposal.model_validate_json(content)
+        # Key pre-check (threat T-02-02): without OPENROUTER_API_KEY and mock
+        # off, return a locked error ChatResponse before any LLM call — nothing
+        # executed, nothing persisted. The key is read at call time so tests can
+        # monkeypatch.setenv without a process restart.
+        if not os.environ.get("LLM_MOCK") and not os.environ.get("OPENROUTER_API_KEY"):
+            return ChatResponse(
+                message=(
+                    "The AI backend is not configured. Set OPENROUTER_API_KEY "
+                    "in .env or run with LLM_MOCK=true."
+                ),
+                error="OPENROUTER_API_KEY is not set",
+            )
+
+        # Tolerant parse (threat T-02-04): a backend failure or schema-violating
+        # proposal becomes an error ChatResponse — never re-raised, and never
+        # reaching _save_messages or the executor (persistence and execution
+        # happen only for successfully parsed turns).
+        try:
+            content = await generate_assistant_response(messages)
+            proposal = ChatProposal.model_validate_json(content)
+        except (
+            litellm.exceptions.AuthenticationError,
+            litellm.exceptions.APIConnectionError,
+            litellm.exceptions.Timeout,
+            ValidationError,
+        ) as exc:
+            return ChatResponse(
+                message="The AI backend could not produce a valid response. Please try again.",
+                error=f"LLM backend unavailable: {exc}",
+            )
 
         trade_results = [
             _execute_trade(conn, price_cache, trade.model_dump()) for trade in proposal.trades
