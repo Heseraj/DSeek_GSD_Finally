@@ -31,7 +31,9 @@ def get_watchlist(conn: sqlite3.Connection, price_cache: PriceCache) -> dict:
     return {"tickers": tickers}
 
 
-async def add_ticker(conn: sqlite3.Connection, market_source: MarketDataSource, ticker: str) -> tuple[str, bool]:
+async def add_ticker(
+    conn: sqlite3.Connection, market_source: MarketDataSource, ticker: str
+) -> tuple[str, bool]:
     """Add a ticker to the watchlist and start streaming it (WATCH-02).
 
     Normalizes the ticker to uppercase-stripped before inserting. The
@@ -58,7 +60,9 @@ async def add_ticker(conn: sqlite3.Connection, market_source: MarketDataSource, 
     return ticker, True
 
 
-async def remove_ticker(conn: sqlite3.Connection, market_source: MarketDataSource, ticker: str) -> bool:
+async def remove_ticker(
+    conn: sqlite3.Connection, market_source: MarketDataSource, ticker: str
+) -> bool:
     """Remove a ticker from the watchlist and stop tracking it (WATCH-03).
 
     Normalizes the ticker, deletes the matching row, and — only when a row was
