@@ -45,7 +45,11 @@ The market-data subsystem is already built and tested. The remaining work delive
   4. Conversation history persists with executed actions and is included as context on later messages
   5. With `LLM_MOCK=true`, chat returns deterministic responses without an API key
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+- [ ] 02-01-PLAN.md — Dependencies (litellm, python-dotenv), .env loading, chat schemas & prompts (CHAT-01)
+- [ ] 02-02-PLAN.md — POST /api/chat mock-mode tracer: parse → auto-execute → persist pipeline (CHAT-01..CHAT-05)
+- [ ] 02-03-PLAN.md — Live LiteLLM branch (gpt-oss-120b/Cerebras) + 503 error contract + history/determinism tests (CHAT-01, CHAT-04, CHAT-05)
 
 ### Phase 3: Frontend Trading Terminal
 
