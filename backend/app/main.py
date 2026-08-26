@@ -8,9 +8,8 @@ import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
-
 from dotenv import load_dotenv
+from fastapi import FastAPI
 
 from app.db import init_db
 from app.market import PriceCache, create_market_data_source, create_stream_router
