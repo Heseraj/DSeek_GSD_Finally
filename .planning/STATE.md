@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 01
 current_phase_name: Backend Foundation
 status: executing
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-08-26T07:32:47.498Z"
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-08-26T07:48:10.590Z"
 last_activity: 2026-08-26
 last_activity_desc: Phase 01 execution started
-state_head: dbe4b58eb7cfd53227172bfeec1ad2cc1146c609
+state_head: 94ab75073ee7b08cd038eb8118e84e017a487ac6
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-08-25)
 ## Current Position
 
 Phase: 01 (Backend Foundation) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-08-26 — Phase 01 execution started
 
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0%
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 01 P01 | 47 | 3 tasks | 16 files |
+| Phase 01-backend-foundation P02 | 10 | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,10 @@ Recent decisions affecting current work:
 - Phase 4 (roadmap): Docker packaging and E2E tests combined (E2E requires Docker to run)
 - [Phase 01]: PriceCache constructed at module level in main.py so the SSE router mounts at import time; lifespan owns source creation + init_db; single-cache invariant preserved
 - [Phase 01]: SSE smoke test uses real uvicorn + httpx network transport because httpx ASGITransport buffers full response bodies and TestClient cannot consume infinite SSE streams
+- [Phase 01]: Pydantic structural violations keep FastAPI's standard 422; only domain validation failures map to the plan's codes - unknown ticker/missing price -> 404, insufficient cash/shares -> 400 (matches threat T-02-01)
+- [Phase 01]: Custom TradeError exception hierarchy in portfolio service.py (UnknownTickerError/InsufficientCashError/InsufficientSharesError) so routers map domain errors to 404/400 - deliberate extension of the no-custom-exceptions convention
+- [Phase 01]: record_snapshot mirrors get_portfolio valuation math inline (avoids circular import); test_history pins snapshot == live portfolio value so history cannot drift
+- [Phase 01]: HTTP trade tests use non-simulated tickers (IBM/ORCL/INTC) primed in the cache so the live simulator cannot race the fill price
 
 ### Pending Todos
 
@@ -91,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-26T07:32:35.505Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-08-26T07:48:10.559Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None

@@ -25,9 +25,9 @@ Built in `backend/app/market/` (73 tests, 84% coverage). NOT rebuilt in this roa
 ### Portfolio (PORT)
 
 - [x] **PORT-01**: `GET /api/portfolio` returns positions, cash balance, total value, and unrealized P&L
-- [ ] **PORT-02**: `POST /api/portfolio/trade` executes market buy orders (instant fill, no fees, sufficient-cash validation)
-- [ ] **PORT-03**: `POST /api/portfolio/trade` executes market sell orders (sufficient-shares validation, average-cost update)
-- [ ] **PORT-04**: `GET /api/portfolio/history` returns value snapshots (recorded every 30s and after each trade)
+- [x] **PORT-02**: `POST /api/portfolio/trade` executes market buy orders (instant fill, no fees, sufficient-cash validation)
+- [x] **PORT-03**: `POST /api/portfolio/trade` executes market sell orders (sufficient-shares validation, average-cost update)
+- [x] **PORT-04**: `GET /api/portfolio/history` returns value snapshots (recorded every 30s and after each trade)
 
 ### Watchlist (WATCH)
 
@@ -95,9 +95,9 @@ Deferred to future release. Tracked but not in current roadmap.
 | DB-02 | Phase 1 | Complete |
 | DB-03 | Phase 1 | Complete |
 | PORT-01 | Phase 1 | Complete |
-| PORT-02 | Phase 1 | Pending |
-| PORT-03 | Phase 1 | Pending |
-| PORT-04 | Phase 1 | Pending |
+| PORT-02 | Phase 1 | Complete |
+| PORT-03 | Phase 1 | Complete |
+| PORT-04 | Phase 1 | Complete |
 | WATCH-01 | Phase 1 | Complete |
 | WATCH-02 | Phase 1 | Pending |
 | WATCH-03 | Phase 1 | Pending |
