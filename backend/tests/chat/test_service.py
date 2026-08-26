@@ -1,8 +1,12 @@
-"""Tests for the chat service schemas and prompts."""
+"""Tests for the chat service schemas, prompts, and the live LLM branch."""
 
 from __future__ import annotations
 
+import json
+from types import SimpleNamespace
+
 import pytest
+from litellm.exceptions import APIConnectionError
 from pydantic import ValidationError
 
 from app.chat.prompts import SYSTEM_PROMPT, build_context
@@ -13,6 +17,41 @@ from app.chat.schemas import (
     TradeAction,
     WatchlistChange,
 )
+from app.chat.service import _mock_response, generate_assistant_response, process_message
+from app.db import get_connection, init_db
+from app.market import PriceCache
+
+
+class MockMarketSource:
+    """Minimal MarketDataSource stand-in recording add/remove calls.
+
+    Mirrors the real simulator's contract: add_ticker seeds the price cache so
+    the ticker gains a price, remove_ticker clears it from the cache. (Copied
+    from tests/watchlist/test_mutation.py via tests/chat/test_execution.py —
+    the repo's established pattern for chat execution tests.)
+    """
+
+    def __init__(self) -> None:
+        self.tracked: set[str] = set()
+        self.cache = PriceCache()
+
+    async def add_ticker(self, ticker: str) -> None:
+        self.tracked.add(ticker)
+        self.cache.update(ticker=ticker, price=100.0)
+
+    async def remove_ticker(self, ticker: str) -> None:
+        self.tracked.discard(ticker)
+        self.cache.remove(ticker)
+
+    def get_tickers(self) -> list[str]:
+        return sorted(self.tracked)
+
+
+def _make_db(tmp_path) -> str:
+    """Create a fresh seeded database and return its path."""
+    db_path = str(tmp_path / "test.db")
+    init_db(db_path)
+    return db_path
 
 
 class TestChatRequest:
@@ -139,3 +178,117 @@ class TestBuildContext:
         context = build_context({}, {})
         assert isinstance(context, str)
         assert context != ""
+
+
+class TestLiveLiteLLMBranch:
+    """The 02-03 live branch: acompletion kwargs, key pre-check, tolerant error mapping."""
+
+    @staticmethod
+    def _stub_response(content: str) -> SimpleNamespace:
+        """Build the minimal acompletion return shape: .choices[0].message.content."""
+        return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=content))])
+
+    async def test_live_branch_calls_acompletion_with_expected_kwargs(self, monkeypatch):
+        """The live branch calls litellm.acompletion with spec §9 kwargs exactly."""
+        recorded: dict = {}
+
+        async def fake_acompletion(**kwargs):
+            recorded.update(kwargs)
+            return self._stub_response('{"message":"ok","trades":[],"watchlist_changes":[]}')
+
+        monkeypatch.setattr("litellm.acompletion", fake_acompletion)
+        monkeypatch.delenv("LLM_MOCK", raising=False)
+        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+
+        content = await generate_assistant_response([{"role": "user", "content": "hi"}])
+
+        assert recorded["model"] == "openrouter/openai/gpt-oss-120b"
+        assert recorded["messages"] == [{"role": "user", "content": "hi"}]
+        assert recorded["response_format"]["type"] == "json_schema"
+        assert "properties" in recorded["response_format"]["json_schema"]["schema"]
+        assert recorded["extra_body"] == {
+            "provider": {"order": ["cerebras"], "allow_fallbacks": False}
+        }
+        assert recorded["force_timeout"] == 60
+        assert content == '{"message":"ok","trades":[],"watchlist_changes":[]}'
+
+    async def test_no_key_returns_error_chat_response(self, tmp_path, monkeypatch):
+        """Missing OPENROUTER_API_KEY with mock off yields an error ChatResponse and no LLM call."""
+        monkeypatch.delenv("LLM_MOCK", raising=False)
+        monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+
+        async def fail_if_called(**kwargs):
+            raise AssertionError("litellm.acompletion must not be called when the key is missing")
+
+        monkeypatch.setattr("litellm.acompletion", fail_if_called)
+
+        db_path = _make_db(tmp_path)
+        response = await process_message(db_path, PriceCache(), MockMarketSource(), "hi")
+
+        assert response.error
+        assert response.trades == []
+        assert response.watchlist_changes == []
+
+    async def test_llm_backend_error_returns_error_chat_response(self, tmp_path, monkeypatch):
+        """A litellm backend failure maps to an error ChatResponse, never a raise."""
+        monkeypatch.delenv("LLM_MOCK", raising=False)
+        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+
+        async def boom(**kwargs):
+            raise APIConnectionError("boom", "openrouter", "openrouter/openai/gpt-oss-120b")
+
+        monkeypatch.setattr("litellm.acompletion", boom)
+
+        db_path = _make_db(tmp_path)
+        response = await process_message(db_path, PriceCache(), MockMarketSource(), "hi")
+
+        assert "unavailable" in response.error
+        assert response.trades == []
+        assert response.watchlist_changes == []
+
+    async def test_malformed_output_is_tolerated(self, tmp_path, monkeypatch):
+        """Schema-violating LLM output yields an error ChatResponse; nothing persists."""
+        monkeypatch.setenv("LLM_MOCK", "true")
+        monkeypatch.setattr(
+            "app.chat.service._mock_response",
+            lambda msg: {"message": "ok", "trades": "not-a-list", "watchlist_changes": []},
+        )
+
+        db_path = _make_db(tmp_path)
+        response = await process_message(db_path, PriceCache(), MockMarketSource(), "hi")
+
+        assert response.error
+        assert response.trades == []
+        assert response.watchlist_changes == []
+
+        conn = get_connection(db_path)
+        try:
+            chat_rows = conn.execute("SELECT COUNT(*) AS n FROM chat_messages").fetchone()["n"]
+            trade_rows = conn.execute("SELECT COUNT(*) AS n FROM trades").fetchone()["n"]
+        finally:
+            conn.close()
+        assert chat_rows == 0
+        assert trade_rows == 0
+
+    async def test_supports_response_schema_false_uses_json_object(self, monkeypatch):
+        """json_object is the fallback when the provider lacks response-schema support."""
+        recorded: dict = {}
+
+        async def fake_acompletion(**kwargs):
+            recorded.update(kwargs)
+            return self._stub_response('{"message":"ok"}')
+
+        monkeypatch.setattr("litellm.supports_response_schema", lambda model: False)
+        monkeypatch.setattr("litellm.acompletion", fake_acompletion)
+        monkeypatch.delenv("LLM_MOCK", raising=False)
+        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+
+        await generate_assistant_response([{"role": "user", "content": "hi"}])
+
+        assert recorded["response_format"] == {"type": "json_object"}
+
+    async def test_mock_mode_returns_canned_dict(self, monkeypatch):
+        """CHAT-05 determinism at unit level: mock returns the canned dict exactly."""
+        monkeypatch.setenv("LLM_MOCK", "true")
+        content = await generate_assistant_response([{"role": "user", "content": "Buy Apple"}])
+        assert json.loads(content) == _mock_response("Buy Apple")
