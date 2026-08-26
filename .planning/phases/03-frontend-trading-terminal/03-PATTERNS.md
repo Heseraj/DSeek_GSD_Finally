@@ -140,7 +140,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
 
 **Notes for the planner:**
 - The **only** exception to `!res.ok` throwing is `POST /api/chat`: ChatPanel reads the body as `ChatResponse` on **both 200 and 503** (03-RESEARCH.md:287; `backend/app/chat/router.py:33-34`). Give ChatPanel a dedicated `fetchChat()` that bypasses the generic throw for 503.
-- `DELETE /api/watchlist/{ticker}` returns 204 with no body — `apiFetch` must tolerate empty bodies for this call (watchlist/router.py:72-73).
+- `DELETE /api/watchlist/{ticker}` returns 204 with no body — this call must NOT go through `apiFetch`'s `res.json()` (which rejects on an empty body). Use a raw fetch with a `res.status` check before any body read (the `fetchChat` pattern), or extend `apiFetch` to skip `res.json()` on 204 (watchlist/router.py:72-73). 03-05 Task 3 specifies the raw-fetch option.
 
 ---
 

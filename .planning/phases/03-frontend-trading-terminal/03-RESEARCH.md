@@ -442,20 +442,23 @@ const portfolio = await apiFetch<PortfolioResponse>('/api/portfolio/trade', {
 | A6 | `create-next-app@latest` with `--typescript --app --eslint --tailwind` scaffolds a working Next 16 + React 19 + Tailwind 4 base (Turbopack default). | Standard Stack | If scaffold flags changed, the plan adapts; the three added deps are unaffected. |
 | A7 | lightweight-charts `time` accepts integer Unix seconds for intraday series; `Math.floor(timestamp)` is required because the backend sends float `time.time()` seconds [VERIFIED: models.py:14]. | Pitfall 3 | If v5 requires a `UTCTimestamp` wrapper in some path, the wrapper is a 1-line change at the store boundary. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Dev-loop CORS deviation (A1) — needs user confirmation**
    - What we know: `output:'export'` forbids `rewrites`/`proxy`; `next dev` (:3000) → FastAPI (:8000) is cross-origin; the backend has no CORS middleware today.
    - What's unclear: Whether the user permits a dev-only `CORSMiddleware` (allow_origins=["http://localhost:3000"]) in `backend/app/main.py`, or prefers the no-CORS fallback (serve `out/` from FastAPI during dev).
    - Recommendation: Add the dev-only CORS middleware; it is inert in production (empty-origin builds stay same-origin) and unlocks the fast `next dev` loop. Gate behind a `checkpoint:human-verify` in the plan.
+   - **RESOLVED (2026-08-26):** User confirmed **dev-only CORS** (allow_origins=["http://localhost:3000"]). Carried into 03-07 as a `checkpoint:human-verify` gate (`gate="blocking-human"`, `autonomous: false`). Production builds keep relative `/api` and stay same-origin.
 2. **FastAPI `app.frontend()` version gap (Phase 4 concern, note only)**
    - What we know: FastAPI docs (0.141.1) introduce `app.frontend('/', directory=...)` with automatic SPA fallback (`fallback='auto'` → index.html for browser navigation); the installed backend is **0.128.7 and lacks it** (verified `hasattr(FastAPI, 'frontend') == False`).
    - What's unclear: Which FastAPI release added `frontend()` and whether Phase 4 bumps the pin.
    - Recommendation: Phase 3 only guarantees the build lands in `frontend/out/` (index.html + `_next/` + `404.html`); Phase 4 either bumps `fastapi` to a version with `app.frontend()` or uses `StaticFiles` + a catch-all fallback. Not blocking Phase 3.
+   - **RESOLVED (2026-08-26):** Documented as Phase 4 concern; non-blocking this phase. Phase 3 guarantees the `frontend/out/` structure only.
 3. **Live chat verification in Phase 3**
    - What we know: No `OPENROUTER_API_KEY` on this machine (Phase 2 confirmed); `LLM_MOCK=true` returns deterministic mock responses.
    - What's unclear: Whether a live chat smoke test is expected this phase.
    - Recommendation: Build and test the chat panel against mock mode (deterministic, exercises the same `ChatResponse` rendering incl. the 503 contract). The chat endpoint is fully backend-verified already.
+   - **RESOLVED (2026-08-26):** Mock mode only (no key on machine). Chat panel tested against `LLM_MOCK=true` + the 503 contract via mocked fetch. Live chat remains an optional manual check.
 
 ## Environment Availability
 
