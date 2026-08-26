@@ -45,7 +45,7 @@ The market-data subsystem is already built and tested. The remaining work delive
   4. Conversation history persists with executed actions and is included as context on later messages
   5. With `LLM_MOCK=true`, chat returns deterministic responses without an API key
 
-**Plans**: 2/3 plans executed
+**Plans**: 3/3 plans executed
 **Wave 1**
 
 - [x] 02-01-PLAN.md — Dependencies (litellm, python-dotenv), .env loading, chat schemas & prompts (CHAT-01)
@@ -56,7 +56,7 @@ The market-data subsystem is already built and tested. The remaining work delive
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 02-03-PLAN.md — Live LiteLLM branch (gpt-oss-120b/Cerebras) + 503 error contract + history/determinism tests (CHAT-01, CHAT-04, CHAT-05)
+- [x] 02-03-PLAN.md — Live LiteLLM branch (gpt-oss-120b/Cerebras) + 503 error contract + history/determinism tests (CHAT-01, CHAT-04, CHAT-05)
 
 ### Phase 3: Frontend Trading Terminal
 
@@ -97,6 +97,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Backend Foundation | 3/3 | Complete   | 2026-08-26 |
-| 2. AI Chat Assistant | 2/3 | In Progress|  |
+| 2. AI Chat Assistant | 3/3 | In Progress|  |
 | 3. Frontend Trading Terminal | 0/- | Not started | - |
 | 4. Deployment & E2E | 0/- | Not started | - |
