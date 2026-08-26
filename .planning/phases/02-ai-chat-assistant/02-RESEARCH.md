@@ -306,22 +306,25 @@ history = list(reversed(rows))  # chronological for the LLM
 | A5 | A missing/blank `OPENROUTER_API_KEY` with `LLM_MOCK` unset should return a clean 503-style JSON rather than 500. Spec silent on the exact code. | Pitfalls | Frontend (Phase 3) consumes the response; planner should lock the exact status code |
 | A6 | The plan may implement the integration directly without the (absent) cerebras-inference skill; §9's literal instructions (LiteLLM → OpenRouter → gpt-oss-120b, Cerebras, structured outputs) are fully encoded in this research. | Summary | If the user later provides the skill, the implementation still conforms to §9 |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Will the user provide `OPENROUTER_API_KEY`?**
    - What we know: No `.env` file exists; no key in the environment; tests can run entirely in mock mode.
    - What's unclear: Whether live-mode verification is expected this phase.
    - Recommendation: Build + test with `LLM_MOCK=true` (all 5 success criteria are testable in mock); gate a single live smoke call behind the user supplying `.env`; do not block planning on it.
+   - **RESOLVED (2026-08-26, 02-03):** Live-mode verification gated behind a `user_setup` checkpoint in 02-03 — the user supplies `OPENROUTER_API_KEY` in `.env` for an optional live smoke test; all automated tests run in mock. Not blocking.
 
 2. **`.env` loading now or at Docker time?**
    - What we know: Spec §5 promises `.env` support; backend has none.
    - What's unclear: Whether Phase 2 should add `python-dotenv` or Phase 4's `docker --env-file` is the intended mechanism.
    - Recommendation: Add `python-dotenv` in this phase (small, standard, honors the spec's promise for local dev).
+   - **RESOLVED (2026-08-26, 02-01):** 02-01 Task 2 adds `python-dotenv>=1.0` with `load_dotenv()` at `main.py` import and a root `.env.example` (`.env` itself is gitignored).
 
 3. **Exact error contract when the LLM backend is unavailable**
    - What we know: LiteLLM raises `AuthenticationError`/`APIConnectionError`/`Timeout` (all `APIError` subclasses).
    - What's unclear: Status code + body shape the frontend should expect.
    - Recommendation: 503 with `{"message": "...", "trades": [], "watchlist_changes": [], "error": "..."}` — a valid `ChatResponse` shape with an error field, so the Phase 3 chat panel renders it without special-casing.
+   - **RESOLVED (2026-08-26, 02-03):** 02-03 Task 2 locks the contract — any `ChatResponse` with a top-level `error` returns HTTP 503 with a valid `ChatResponse` body; per-action failures stay 200. Rated `costly` (Phase 3 frontend contract), flagged not gated.
 
 ## Environment Availability
 

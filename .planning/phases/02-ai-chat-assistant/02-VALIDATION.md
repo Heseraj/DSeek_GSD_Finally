@@ -1,9 +1,9 @@
 ---
 phase: 2
 slug: ai-chat-assistant
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: validated
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-08-26
 ---
 
@@ -38,11 +38,12 @@ created: 2026-08-26
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| TBD | 01 | 1 | CHAT-01 | T-02-01 / — | LLM output parsed via Pydantic before any side effect | integration | `pytest tests/chat/test_chat_endpoint.py -q` | ❌ W0 | ⬜ pending |
-| TBD | 01 | 1 | CHAT-05 | — | `LLM_MOCK=true` deterministic, no key required | unit + integration | `pytest tests/chat/test_service.py::test_mock_... -q` | ❌ W0 | ⬜ pending |
-| TBD | 02 | 1 | CHAT-02 | T-02-01 | Failed trade captured per trade, batch continues | unit + integration | `pytest tests/chat/test_execution.py::test_... -q` | ❌ W0 | ⬜ pending |
-| TBD | 02 | 1 | CHAT-03 | — | Watchlist add/remove via existing async services | integration | `pytest tests/chat/test_execution.py::test_... -q` | ❌ W0 | ⬜ pending |
-| TBD | 03 | 2 | CHAT-04 | — | History persists in `chat_messages`; later calls include prior turns | integration | `pytest tests/chat/test_chat_endpoint.py::test_history_... -q` | ❌ W0 | ⬜ pending |
+| 02-01-T2 | 01 | 1 | CHAT-01 | T-02-01 / — | Pydantic `ChatRequest`/`ChatProposal` schemas validate LLM output before any side effect | unit | `pytest tests/chat/test_schemas.py -q` | ✅ | ⬜ pending |
+| 02-01-T3 | 01 | 1 | CHAT-05 | — | `SYSTEM_PROMPT` + `build_context` assembled; mock seam ready | unit | `pytest tests/chat/test_service.py::test_... -q` | ✅ | ⬜ pending |
+| 02-02-T1 | 02 | 1 | CHAT-01, CHAT-02, CHAT-03, CHAT-04, CHAT-05 | T-02-01 | Mock-mode tracer: POST /api/chat shape, real `execute_trade` side effects, `chat_messages` persistence | integration | `pytest tests/chat/test_chat_endpoint.py -q` | ✅ | ⬜ pending |
+| 02-02-T2 | 02 | 1 | CHAT-02, CHAT-03 | T-02-01 | 9-scenario auto-execution battery — failed trade captured per trade, batch continues | unit + integration | `pytest tests/chat/test_execution.py -q` | ✅ | ⬜ pending |
+| 02-03-T1 | 03 | 2 | CHAT-05 | — | Live LiteLLM branch TDD (mock-verified): gpt-oss-120b, Cerebras pinning, `response_format` json_schema | unit | `pytest tests/chat/test_service.py -q` | ✅ | ⬜ pending |
+| 02-03-T2 | 03 | 2 | CHAT-01, CHAT-04, CHAT-05 | T-02-01 | 503-with-ChatResponse error contract + history-as-context + byte-identical determinism | integration | `pytest tests/chat/test_chat_endpoint.py -q && uv run --extra dev pytest -q` | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -50,9 +51,11 @@ created: 2026-08-26
 
 ## Wave 0 Requirements
 
-- [ ] `backend/tests/chat/` — new test package for all chat tests (follows `tests/portfolio/`, `tests/watchlist/` convention)
-- [ ] `backend/tests/chat/conftest.py` (optional) — shared `_make_client(tmp_path, monkeypatch)` fixture (established pattern from `tests/test_app.py:17-20`), a `monkeypatch.setenv("LLM_MOCK", "true")` fixture, and a `mock_llm` fixture that patches the live branch
-- [ ] Framework install: none needed (pytest/pytest-asyncio/httpx already dev deps); only `litellm` (+ optional `python-dotenv`) added to runtime deps
+- [x] `backend/tests/chat/` — new test package created inside 02-02 Task 1 / 02-02 Task 2 (follows `tests/portfolio/`, `tests/watchlist/` convention)
+- [x] `backend/tests/chat/conftest.py` (optional) — shared `_make_client(tmp_path, monkeypatch)` fixture created inside 02-02 Task 1 (established pattern from `tests/test_app.py:17-20`); `monkeypatch.setenv("LLM_MOCK", "true")` + `mock_llm` fixtures in the same task
+- [x] Framework install: none needed (pytest/pytest-asyncio/httpx already dev deps); `litellm` (+ `python-dotenv`) added to runtime deps in 02-01 Task 2
+
+Wave 0 coverage is provided inline — every test file is created inside the plan tasks that need it, so no separate Wave 0 seeding task is required.
 
 ---
 
@@ -73,4 +76,4 @@ created: 2026-08-26
 - [ ] Feedback latency < 60s
 - [ ] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-08-26 (plan-phase verification pass)
