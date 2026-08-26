@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import uuid
+from datetime import datetime, timezone
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -9,7 +12,11 @@ from app.db import get_connection, init_db
 from app.main import app
 from app.market import PriceCache
 from app.portfolio.schemas import TradeRequest
-from app.portfolio.service import InsufficientCashError, execute_trade
+from app.portfolio.service import (
+    InsufficientCashError,
+    InsufficientSharesError,
+    execute_trade,
+)
 
 
 def _make_db(tmp_path):
@@ -17,6 +24,17 @@ def _make_db(tmp_path):
     db_path = str(tmp_path / "test.db")
     init_db(db_path)
     return db_path, get_connection(db_path)
+
+
+def _seed_position(conn, ticker: str, quantity: float, avg_cost: float) -> None:
+    """Insert a position row for the default user."""
+    now = datetime.now(timezone.utc).isoformat()
+    conn.execute(
+        "INSERT INTO positions (id, user_id, ticker, quantity, avg_cost, updated_at) "
+        "VALUES (?, ?, ?, ?, ?, ?)",
+        (str(uuid.uuid4()), "default", ticker, quantity, avg_cost, now),
+    )
+    conn.commit()
 
 
 def _trade(ticker: str = "AAPL", quantity: float = 10.0, side: str = "buy") -> TradeRequest:
@@ -124,6 +142,94 @@ class TestExecuteTradeBuy:
         assert trades == 0
 
 
+class TestExecuteTradeSell:
+    """Sell-side execution: cash credit and average-cost handling."""
+
+    def test_sell_reduces_quantity_and_increases_cash(self, tmp_path):
+        """Test that selling 5 of 10 shares credits cash and keeps avg_cost."""
+        _, conn = _make_db(tmp_path)
+        _seed_position(conn, "AAPL", 10.0, 150.0)
+        cache = PriceCache()
+        cache.update("AAPL", 200.0)
+        try:
+            result = execute_trade(conn, cache, _trade(quantity=5.0, side="sell"))
+        finally:
+            conn.close()
+
+        assert result["cash_balance"] == 11000.0  # 10000 + 5 * 200.0
+        pos = result["positions"][0]
+        assert pos["quantity"] == 5.0
+        assert pos["avg_cost"] == 150.0  # avg_cost unchanged on a partial sell
+
+    def test_sell_exceeding_shares_raises_and_leaves_state_untouched(self, tmp_path):
+        """Test that overselling raises and changes no rows."""
+        db_path, conn = _make_db(tmp_path)
+        _seed_position(conn, "AAPL", 10.0, 150.0)
+        cache = PriceCache()
+        cache.update("AAPL", 200.0)
+        try:
+            with pytest.raises(InsufficientSharesError):
+                execute_trade(conn, cache, _trade(quantity=11.0, side="sell"))
+        finally:
+            conn.close()
+
+        verify = get_connection(db_path)
+        try:
+            cash = verify.execute(
+                "SELECT cash_balance FROM users_profile WHERE id = ?", ("default",)
+            ).fetchone()["cash_balance"]
+            quantity = verify.execute(
+                "SELECT quantity FROM positions WHERE ticker = ?", ("AAPL",)
+            ).fetchone()["quantity"]
+            trades = verify.execute("SELECT COUNT(*) AS n FROM trades").fetchone()["n"]
+        finally:
+            verify.close()
+
+        assert cash == 10000.0
+        assert quantity == 10.0
+        assert trades == 0
+
+    def test_sell_of_entire_position_removes_row_and_logs_trade(self, tmp_path):
+        """Test that selling the full position deletes the row and logs a sell."""
+        db_path, conn = _make_db(tmp_path)
+        _seed_position(conn, "AAPL", 10.0, 150.0)
+        cache = PriceCache()
+        cache.update("AAPL", 200.0)
+        try:
+            result = execute_trade(conn, cache, _trade(quantity=10.0, side="sell"))
+        finally:
+            conn.close()
+
+        assert result["cash_balance"] == 12000.0
+        assert result["positions"] == []
+
+        verify = get_connection(db_path)
+        try:
+            remaining = verify.execute(
+                "SELECT COUNT(*) AS n FROM positions WHERE ticker = ?", ("AAPL",)
+            ).fetchone()["n"]
+            rows = verify.execute("SELECT side, quantity, price FROM trades").fetchall()
+        finally:
+            verify.close()
+
+        assert remaining == 0
+        assert len(rows) == 1
+        assert rows[0]["side"] == "sell"
+        assert rows[0]["quantity"] == 10.0
+        assert rows[0]["price"] == 200.0
+
+    def test_sell_without_position_raises(self, tmp_path):
+        """Test that selling shares that are not owned raises."""
+        _, conn = _make_db(tmp_path)
+        cache = PriceCache()
+        cache.update("AAPL", 200.0)
+        try:
+            with pytest.raises(InsufficientSharesError):
+                execute_trade(conn, cache, _trade(quantity=1.0, side="sell"))
+        finally:
+            conn.close()
+
+
 class TestTradeEndpoint:
     """HTTP-level behavior of POST /api/portfolio/trade."""
 
@@ -178,3 +284,18 @@ class TestTradeEndpoint:
             )
             assert resp.status_code == 404
             assert resp.json()["detail"]
+
+    def test_sell_insufficient_shares_returns_400(self, tmp_path, monkeypatch):
+        """Test that selling unowned shares returns 400 and leaves cash."""
+        client = _http_client(tmp_path, monkeypatch)
+        with client:
+            client.app.state.price_cache.update("INTC", 200.0)
+            resp = client.post(
+                "/api/portfolio/trade",
+                json={"ticker": "INTC", "quantity": 5, "side": "sell"},
+            )
+            assert resp.status_code == 400
+
+            portfolio = client.get("/api/portfolio").json()
+            assert portfolio["cash_balance"] == 10000.0
+            assert portfolio["positions"] == []
