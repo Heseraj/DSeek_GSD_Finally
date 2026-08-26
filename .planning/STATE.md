@@ -1,18 +1,18 @@
 ---
 gsd_state_version: 1.0
-current_phase: 2
+current_phase: 02
 current_phase_name: AI Chat Assistant
 status: executing
-stopped_at: Completed 01-03-PLAN.md
-last_updated: "2026-08-26T21:29:23.975Z"
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-08-26T21:50:10.399Z"
 last_activity: 2026-08-26
-last_activity_desc: Phase 01 execution started
-state_head: f70be6b288f9e882ec70226eb63ee1dee8b93cb7
+last_activity_desc: Phase 02 execution started
+state_head: db6a4bdd2805da7aa4f28be8d70f178a85c8607b
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 6
-  completed_plans: 3
+  completed_plans: 4
   percent: 25
 ---
 
@@ -23,16 +23,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-25)
 
 **Core value:** A user runs one Docker command and immediately gets a working Bloomberg-style trading terminal — streaming prices, instant simulated trades, portfolio analytics, and an AI copilot that trades on their behalf.
-**Current focus:** Phase 01 — Backend Foundation
+**Current focus:** Phase 02 — AI Chat Assistant
 
 ## Current Position
 
-Phase: 2 (AI Chat Assistant) — READY TO EXECUTE
-Plan: 3 of 3
+Phase: 02 (AI Chat Assistant) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-08-26 — Phase 01 execution started
+Last activity: 2026-08-26 — Phase 02 execution started
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███░░░░░░░] 25%
 
 ## Performance Metrics
 
@@ -61,6 +61,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P01 | 47 | 3 tasks | 16 files |
 | Phase 01-backend-foundation P02 | 10 | 3 tasks | 7 files |
 | Phase 01 P01-03 | 14 | 2 tasks | 4 files |
+| Phase 02 P01 | 9 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,8 @@ Recent decisions affecting current work:
 - [Phase 01]: Duplicate watchlist add returns 409 Conflict: add_ticker returns (ticker, created=False) on UNIQUE(user_id,ticker) violation; no duplicate row written and market source untouched (already tracking)
 - [Phase 01]: remove_ticker deletes first and calls market_source.remove_ticker only when a row was actually deleted; unknown-ticker deletes return 404 leaving source and price cache untouched
 - [Phase 01]: WatchlistAddRequest uses StringConstraints(strip_whitespace=True, min_length=1, max_length=12) so whitespace-only bodies are rejected with 422 (threat T-03-01); min_length alone would accept a single space
+- [Phase 02]: Floor-pin litellm>=1.98.0 and python-dotenv>=1.0 exactly as planned; uv.lock committed for reproducibility (LiteLLM ships daily)
+- [Phase 02]: Relaxed dev httpx pin to >=0.27.0,<1.0: litellm>=1.98.0 requires httpx>=0.28.0,<1.0; SSE smoke test uses real uvicorn transport, so the old <0.28 ASGITransport guard is moot
 
 ### Pending Todos
 
@@ -100,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-26T08:25:55.035Z
-Stopped at: Session resumed, proceeding to plan Phase 2 (AI Chat Assistant)
+Last session: 2026-08-26T21:50:00.686Z
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None
