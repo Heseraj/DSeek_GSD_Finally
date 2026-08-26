@@ -208,3 +208,10 @@ None - no external service configuration required for this plan. (Live chat need
 ---
 *Phase: 02-ai-chat-assistant*
 *Completed: 2026-08-26*
+
+## Self-Check: PASSED
+
+- Created files exist: `backend/app/chat/service.py`, `router.py`, `__init__.py`, `backend/tests/chat/conftest.py`, `test_chat_endpoint.py`, `test_execution.py`, `backend/app/main.py` — all FOUND
+- Commits verified in git log: `2131a9d` (feat tracer), `b9cee48` (test battery), `171efae` (docs summary) — all FOUND
+- Acceptance criteria: Task 1 (exports, POST /api/chat route, main.py wiring, conftest fixtures, happy-path persistence, file passes in one run) PASS; Task 2 (MockMarketSource + _make_db + nine async scenarios, batch continuation proven) PASS
+- Plan verification commands: `pytest tests/chat/test_chat_endpoint.py -q` → 1 passed; `pytest tests/chat/test_execution.py -q` → 9 passed; full suite `pytest -q` → 143 passed (115 baseline + 18 from 02-01 + 10 new); `ruff check app/ tests/` → All checks passed

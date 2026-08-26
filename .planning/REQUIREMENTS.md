@@ -38,8 +38,8 @@ Built in `backend/app/market/` (73 tests, 84% coverage). NOT rebuilt in this roa
 ### Chat Assistant (CHAT)
 
 - [ ] **CHAT-01**: `POST /api/chat` returns a complete structured JSON response (message + trades + watchlist_changes)
-- [ ] **CHAT-02**: AI auto-executes trades from the structured response using the same validation as manual trades
-- [ ] **CHAT-03**: AI auto-applies watchlist changes from the structured response
+- [x] **CHAT-02**: AI auto-executes trades from the structured response using the same validation as manual trades
+- [x] **CHAT-03**: AI auto-applies watchlist changes from the structured response
 - [ ] **CHAT-04**: Conversation history persists in `chat_messages` and is included as context on subsequent messages
 - [ ] **CHAT-05**: `LLM_MOCK=true` returns deterministic mock responses (no API key required)
 
@@ -102,8 +102,8 @@ Deferred to future release. Tracked but not in current roadmap.
 | WATCH-02 | Phase 1 | Complete |
 | WATCH-03 | Phase 1 | Complete |
 | CHAT-01 | Phase 2 | Pending |
-| CHAT-02 | Phase 2 | Pending |
-| CHAT-03 | Phase 2 | Pending |
+| CHAT-02 | Phase 2 | Complete |
+| CHAT-03 | Phase 2 | Complete |
 | CHAT-04 | Phase 2 | Pending |
 | CHAT-05 | Phase 2 | Pending |
 | UI-01 | Phase 3 | Pending |

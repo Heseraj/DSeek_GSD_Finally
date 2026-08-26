@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 02
 current_phase_name: AI Chat Assistant
 status: executing
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-08-26T21:50:10.399Z"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-08-26T22:01:17.894Z"
 last_activity: 2026-08-26
 last_activity_desc: Phase 02 execution started
-state_head: db6a4bdd2805da7aa4f28be8d70f178a85c8607b
+state_head: 171efae40173ba318e8f2b09a6212ff1af20fb6a
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 5
   percent: 25
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-08-25)
 ## Current Position
 
 Phase: 02 (AI Chat Assistant) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-08-26 — Phase 02 execution started
 
@@ -62,6 +62,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 01-backend-foundation P02 | 10 | 3 tasks | 7 files |
 | Phase 01 P01-03 | 14 | 2 tasks | 4 files |
 | Phase 02 P01 | 9 | 3 tasks | 8 files |
+| Phase 02 P02-02 | 24 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,8 @@ Recent decisions affecting current work:
 - [Phase 01]: WatchlistAddRequest uses StringConstraints(strip_whitespace=True, min_length=1, max_length=12) so whitespace-only bodies are rejected with 422 (threat T-03-01); min_length alone would accept a single space
 - [Phase 02]: Floor-pin litellm>=1.98.0 and python-dotenv>=1.0 exactly as planned; uv.lock committed for reproducibility (LiteLLM ships daily)
 - [Phase 02]: Relaxed dev httpx pin to >=0.27.0,<1.0: litellm>=1.98.0 requires httpx>=0.28.0,<1.0; SSE smoke test uses real uvicorn transport, so the old <0.28 ASGITransport guard is moot
+- [Phase 02]: POST /api/chat mock-mode tracer: litellm imported at module level in chat/service.py (# noqa: F401) as the 02-03 live-branch dependency; live branch raises NotImplementedError until 02-03 Task 1
+- [Phase 02]: test_execution.py drives proposals through the mock_llm_proposal factory fixture (setenv LLM_MOCK + patch app.chat.service._mock_response) so all nine scenarios exercise the real parse -> TradeRequest/execute_trade -> add_ticker/remove_ticker pipeline
 
 ### Pending Todos
 
@@ -103,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-26T21:50:00.686Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-08-26T22:00:27.733Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
