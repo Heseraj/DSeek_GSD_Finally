@@ -81,8 +81,20 @@ describe('applyPrices', () => {
   it('skips malformed entries without corrupting state', () => {
     const s0 = useStore.getState();
     s0.applyPrices({ AAPL: up(100, 1000) });
-    s0.applyPrices({ BAD: { ticker: 'BAD', price: 1 } } as never);
-    s0.applyPrices({ BAD2: { ...frame({ ticker: 'BAD2', direction: 'sideways' }), ticker: 'BAD2' } } as never);
+    // Intentionally malformed payloads — bypassed the type system via unknown cast
+    // so the runtime type guard is what protects state (threat T-03-02).
+    const bad = { ticker: 'BAD', price: 1 } as unknown as Record<string, PriceUpdate>;
+    const badDir = {
+      ticker: 'BAD2',
+      price: 1,
+      previous_price: 2,
+      timestamp: 3,
+      change: -1,
+      change_percent: -0.5,
+      direction: 'sideways',
+    } as unknown as Record<string, PriceUpdate>;
+    s0.applyPrices(bad);
+    s0.applyPrices(badDir);
     const s = useStore.getState();
     expect(s.prices.BAD).toBeUndefined();
     expect(s.prices.BAD2).toBeUndefined();
