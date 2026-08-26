@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+import contextlib
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -12,6 +14,7 @@ from app.db import init_db
 from app.market import PriceCache, create_market_data_source, create_stream_router
 from app.market.seed_prices import SEED_PRICES
 from app.portfolio import router as portfolio_router
+from app.portfolio.snapshots import start_snapshot_loop
 from app.watchlist import router as watchlist_router
 
 logger = logging.getLogger(__name__)
@@ -43,10 +46,19 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.market_source = source
     app.state.db_path = DB_PATH
 
+    # Record a portfolio value snapshot every 30 seconds so the history endpoint
+    # keeps the P&L chart current even between trades.
+    snapshot_task = asyncio.create_task(
+        start_snapshot_loop(price_cache, DB_PATH), name="portfolio-snapshot-loop"
+    )
+
     logger.info("FinAlly backend started with %d tickers", len(DEFAULT_TICKERS))
     try:
         yield
     finally:
+        snapshot_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await snapshot_task
         await source.stop()
 
 

@@ -13,6 +13,7 @@ from app.portfolio.service import (
     TradeError,
     UnknownTickerError,
     execute_trade,
+    get_history,
     get_portfolio,
 )
 
@@ -56,5 +57,21 @@ def trade(request: Request, trade: TradeRequest) -> dict:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except TradeError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    finally:
+        conn.close()
+
+
+@router.get("/history")
+def portfolio_history(request: Request) -> dict:
+    """Return portfolio value snapshots in ascending recorded_at order.
+
+    The P&L chart data: one entry every 30 seconds from the background loop
+    plus one immediately after each trade.
+    """
+    db_path: str = request.app.state.db_path
+
+    conn = get_connection(db_path)
+    try:
+        return get_history(conn)
     finally:
         conn.close()

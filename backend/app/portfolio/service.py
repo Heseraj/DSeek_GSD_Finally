@@ -7,6 +7,7 @@ import uuid
 from datetime import datetime, timezone
 
 from app.market import PriceCache
+from app.portfolio.snapshots import record_snapshot
 
 
 class TradeError(Exception):
@@ -168,4 +169,27 @@ def execute_trade(conn: sqlite3.Connection, price_cache: PriceCache, trade) -> d
             (str(uuid.uuid4()), "default", ticker, trade.side, trade.quantity, price, now),
         )
 
+        # History stays consistent with portfolio value: every successful fill
+        # records a snapshot inside the same transaction as the trade.
+        record_snapshot(conn, price_cache)
+
     return get_portfolio(conn, price_cache)
+
+
+def get_history(conn: sqlite3.Connection) -> dict:
+    """Return portfolio value snapshots ordered oldest-first.
+
+    Shape: {"snapshots": [{"recorded_at": ..., "total_value": ...}, ...]} —
+    the exact payload the P&L chart needs.
+    """
+    rows = conn.execute(
+        "SELECT recorded_at, total_value FROM portfolio_snapshots "
+        "WHERE user_id = ? ORDER BY recorded_at",
+        ("default",),
+    ).fetchall()
+    return {
+        "snapshots": [
+            {"recorded_at": row["recorded_at"], "total_value": float(row["total_value"])}
+            for row in rows
+        ]
+    }

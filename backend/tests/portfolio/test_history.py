@@ -116,9 +116,7 @@ class TestTradeRecordsSnapshot:
         try:
             with pytest.raises(InsufficientCashError):
                 execute_trade(conn, cache, TradeRequest(ticker="AAPL", quantity=100.0, side="buy"))
-            row = conn.execute(
-                "SELECT COUNT(*) AS n FROM portfolio_snapshots"
-            ).fetchone()
+            row = conn.execute("SELECT COUNT(*) AS n FROM portfolio_snapshots").fetchone()
         finally:
             conn.close()
 
