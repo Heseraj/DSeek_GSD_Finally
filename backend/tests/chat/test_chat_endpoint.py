@@ -14,9 +14,7 @@ from app.chat.schemas import ChatResponse
 class TestChatEndpoint:
     """End-to-end chat over HTTP: mock LLM -> execute -> persist -> respond."""
 
-    def test_chat_mock_happy_path_executes_trade_and_persists(
-        self, client, mock_llm, tmp_path
-    ):
+    def test_chat_mock_happy_path_executes_trade_and_persists(self, client, mock_llm, tmp_path):
         """The tracer gate: a mock-mode turn returns the ChatResponse envelope,
         really executes the proposed AAPL buy (cash decreases, trade row written),
         and persists both chat_messages rows with JSON actions.
@@ -41,9 +39,7 @@ class TestChatEndpoint:
         conn = sqlite3.connect(tmp_path / "finally.db")
         conn.row_factory = sqlite3.Row
         try:
-            trade_row = conn.execute(
-                "SELECT ticker, side, quantity FROM trades"
-            ).fetchone()
+            trade_row = conn.execute("SELECT ticker, side, quantity FROM trades").fetchone()
             profile = conn.execute(
                 "SELECT cash_balance FROM users_profile WHERE id = ?", ("default",)
             ).fetchone()
@@ -94,6 +90,7 @@ class TestChatEndpoint:
 
     def test_llm_backend_error_returns_503(self, client, monkeypatch, tmp_path):
         """A litellm backend failure -> 503 + error field; nothing executed or persisted."""
+
         async def boom(**kwargs):
             raise APIConnectionError("boom", "openrouter", "openrouter/openai/gpt-oss-120b")
 
@@ -145,7 +142,9 @@ class TestChatEndpoint:
         assert chat_rows == 0
         assert trade_rows == 0
 
-    def test_history_persists_and_is_included_as_context(self, client, mock_llm, monkeypatch, tmp_path):
+    def test_history_persists_and_is_included_as_context(
+        self, client, mock_llm, monkeypatch, tmp_path
+    ):
         """CHAT-04: prior turns persist and reach the next request's LLM context."""
         # Prime a deterministic fill price so the canned AAPL buy executes.
         client.app.state.price_cache.update("AAPL", 190.0)
