@@ -12,6 +12,7 @@ from app.db import init_db
 from app.market import PriceCache, create_market_data_source, create_stream_router
 from app.market.seed_prices import SEED_PRICES
 from app.portfolio import router as portfolio_router
+from app.watchlist import router as watchlist_router
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,7 @@ app = FastAPI(title="FinAlly", version="0.1.0", lifespan=lifespan)
 
 app.include_router(create_stream_router(price_cache))
 app.include_router(portfolio_router)
+app.include_router(watchlist_router)
 
 
 @app.get("/api/health")
