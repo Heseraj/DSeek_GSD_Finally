@@ -57,6 +57,9 @@ async def start_snapshot_loop(
     while True:
         try:
             await loop.run_in_executor(None, _record_snapshot_to_db, db_path, price_cache)
+        except asyncio.CancelledError:
+            logger.info("Portfolio snapshot loop cancelled")
+            return
         except Exception:
             logger.exception("Portfolio snapshot failed")
         try:
