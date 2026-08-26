@@ -70,9 +70,7 @@ def _position(db_path: str, ticker: str):
 def _watchlist_row(db_path: str, ticker: str):
     conn = get_connection(db_path)
     try:
-        return conn.execute(
-            "SELECT ticker FROM watchlist WHERE ticker = ?", (ticker,)
-        ).fetchone()
+        return conn.execute("SELECT ticker FROM watchlist WHERE ticker = ?", (ticker,)).fetchone()
     finally:
         conn.close()
 

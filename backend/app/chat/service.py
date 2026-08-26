@@ -18,6 +18,7 @@ import uuid
 from datetime import datetime, timezone
 
 import litellm  # noqa: F401  # used by the live branch
+from openai import APIError as OpenAIAPIError
 from pydantic import ValidationError
 
 from app.chat.prompts import SYSTEM_PROMPT, build_context
@@ -32,6 +33,17 @@ from app.market import MarketDataSource, PriceCache
 from app.portfolio.schemas import TradeRequest
 from app.portfolio.service import TradeError, execute_trade, get_portfolio
 from app.watchlist.service import add_ticker, get_watchlist, remove_ticker
+
+
+def _mock_enabled() -> bool:
+    """True only when LLM_MOCK parses as a truthy boolean.
+
+    Any value other than a truthy token (true/1/yes, case-insensitive) leaves
+    mock mode OFF — notably ``false``, the value .env.example ships, must NOT
+    activate the mock branch (CR-01). Read at call time so tests can
+    monkeypatch.setenv without a process restart.
+    """
+    return os.environ.get("LLM_MOCK", "").strip().lower() in {"true", "1", "yes"}
 
 
 def _mock_response(user_message: str) -> dict:
@@ -88,7 +100,7 @@ async def generate_assistant_response(messages: list[dict]) -> str:
     cerebras-inference skill named by the spec does not exist locally; the §9
     pattern is encoded directly (RESEARCH finding 3 / assumption A6).
     """
-    if os.environ.get("LLM_MOCK"):
+    if _mock_enabled():
         return json.dumps(_mock_response(messages[-1]["content"]))
 
     response_format = {
@@ -136,15 +148,25 @@ def _save_messages(
         conn.execute(
             "INSERT INTO chat_messages (id, user_id, role, content, actions, created_at) "
             "VALUES (?, ?, ?, ?, ?, ?)",
-            (str(uuid.uuid4()), "default", "assistant", assistant_message, json.dumps(actions), now),
+            (
+                str(uuid.uuid4()),
+                "default",
+                "assistant",
+                assistant_message,
+                json.dumps(actions),
+                now,
+            ),
         )
 
 
 def _execute_trade(conn: sqlite3.Connection, price_cache: PriceCache, proposal: dict) -> dict:
     """Execute one LLM-proposed trade through the same validation as manual trades.
 
-    Per-action error capture (spec §9): a TradeError marks this action failed
-    with a human-readable error and is never re-raised, so the batch continues.
+    Per-action error capture (spec §9): any error in this single action — the
+    TradeError hierarchy (insufficient cash/shares, unknown ticker) OR an
+    unexpected exception (e.g. sqlite3.OperationalError) — marks THIS action
+    failed with a human-readable error and is never re-raised, so the batch
+    continues and the response is never a raw 500 (CR-02).
     """
     trade = TradeRequest(**proposal)
     try:
@@ -152,6 +174,8 @@ def _execute_trade(conn: sqlite3.Connection, price_cache: PriceCache, proposal: 
         return {**proposal, "status": "executed"}
     except TradeError as exc:
         return {**proposal, "status": "failed", "error": str(exc)}
+    except Exception as exc:  # noqa: BLE001  # per-action isolation, never abort the batch
+        return {**proposal, "status": "failed", "error": f"Trade failed: {exc}"}
 
 
 async def _apply_watchlist_change(
@@ -196,7 +220,7 @@ async def process_message(
         # off, return a locked error ChatResponse before any LLM call — nothing
         # executed, nothing persisted. The key is read at call time so tests can
         # monkeypatch.setenv without a process restart.
-        if not os.environ.get("LLM_MOCK") and not os.environ.get("OPENROUTER_API_KEY"):
+        if not _mock_enabled() and not os.environ.get("OPENROUTER_API_KEY"):
             return ChatResponse(
                 message=(
                     "The AI backend is not configured. Set OPENROUTER_API_KEY "
@@ -208,16 +232,16 @@ async def process_message(
         # Tolerant parse (threat T-02-04): a backend failure or schema-violating
         # proposal becomes an error ChatResponse — never re-raised, and never
         # reaching _save_messages or the executor (persistence and execution
-        # happen only for successfully parsed turns).
+        # happen only for successfully parsed turns). OpenAIAPIError is the
+        # common base of the LiteLLM/OpenAI exception hierarchy (AuthenticationError,
+        # APIConnectionError, RateLimitError, BadRequestError,
+        # ContextWindowExceededError, Timeout, InternalServerError, …), so
+        # catching it enforces the locked "never 500" contract across the whole
+        # live branch (CR-02).
         try:
             content = await generate_assistant_response(messages)
             proposal = ChatProposal.model_validate_json(content)
-        except (
-            litellm.exceptions.AuthenticationError,
-            litellm.exceptions.APIConnectionError,
-            litellm.exceptions.Timeout,
-            ValidationError,
-        ) as exc:
+        except (OpenAIAPIError, ValidationError) as exc:
             return ChatResponse(
                 message="The AI backend could not produce a valid response. Please try again.",
                 error=f"LLM backend unavailable: {exc}",

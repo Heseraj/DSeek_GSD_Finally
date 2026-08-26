@@ -292,3 +292,109 @@ class TestLiveLiteLLMBranch:
         monkeypatch.setenv("LLM_MOCK", "true")
         content = await generate_assistant_response([{"role": "user", "content": "Buy Apple"}])
         assert json.loads(content) == _mock_response("Buy Apple")
+
+    async def test_mock_false_is_not_truthy_live_branch_runs(self, monkeypatch):
+        """CR-01 regression: LLM_MOCK=false (the .env.example default) must NOT enable mock.
+
+        With a key present, `LLM_MOCK=false` must reach the live branch
+        (acompletion), never short-circuit to the canned mock response.
+        """
+        recorded: dict = {}
+
+        async def fake_acompletion(**kwargs):
+            recorded.update(kwargs)
+            return self._stub_response('{"message":"ok"}')
+
+        monkeypatch.setenv("LLM_MOCK", "false")
+        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+        monkeypatch.setattr("litellm.acompletion", fake_acompletion)
+
+        content = await generate_assistant_response([{"role": "user", "content": "hi"}])
+
+        assert recorded["model"] == "openrouter/openai/gpt-oss-120b"
+        assert content == '{"message":"ok"}'
+
+    async def test_mock_false_without_key_returns_error_not_mock(self, tmp_path, monkeypatch):
+        """CR-01 regression: LLM_MOCK=false must not bypass the 503 key guard.
+
+        The no-key path must return an error ChatResponse (HTTP 503 at the
+        router), not a canned 200 mock response.
+        """
+        monkeypatch.setenv("LLM_MOCK", "false")
+        monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+
+        async def fail_if_called(**kwargs):
+            raise AssertionError("litellm.acompletion must not be called without a key")
+
+        monkeypatch.setattr("litellm.acompletion", fail_if_called)
+
+        db_path = _make_db(tmp_path)
+        response = await process_message(db_path, PriceCache(), MockMarketSource(), "hi")
+
+        assert response.error == "OPENROUTER_API_KEY is not set"
+        assert response.message
+        assert response.trades == []
+        assert response.watchlist_changes == []
+
+    async def test_rate_limit_error_maps_to_error_response_not_500(self, tmp_path, monkeypatch):
+        """CR-02 regression: RateLimitError (an APIError subclass) must map to an error
+        ChatResponse — the locked contract, never a raw 500."""
+        from litellm.exceptions import RateLimitError
+
+        monkeypatch.delenv("LLM_MOCK", raising=False)
+        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+
+        async def boom(**kwargs):
+            raise RateLimitError("rate limited", "openrouter", "openrouter/openai/gpt-oss-120b")
+
+        monkeypatch.setattr("litellm.acompletion", boom)
+
+        db_path = _make_db(tmp_path)
+        response = await process_message(db_path, PriceCache(), MockMarketSource(), "hi")
+
+        assert response.error
+        assert "unavailable" in response.error
+        assert response.trades == []
+        assert response.watchlist_changes == []
+
+    async def test_unexpected_exception_in_one_trade_does_not_abort_batch(
+        self, tmp_path, monkeypatch
+    ):
+        """CR-02 regression: a non-TradeError in one proposed trade marks it failed and the
+        rest of the batch still executes — never a raw 500 and never a partial raise."""
+        monkeypatch.setenv("LLM_MOCK", "true")
+        monkeypatch.setattr(
+            "app.chat.service._mock_response",
+            lambda msg: {
+                "message": "ok",
+                "trades": [
+                    {"ticker": "BROKEN", "side": "buy", "quantity": 1},
+                    {"ticker": "AAPL", "side": "buy", "quantity": 1},
+                ],
+                "watchlist_changes": [],
+            },
+        )
+
+        db_path = _make_db(tmp_path)
+        cache = PriceCache()
+        cache.update(ticker="AAPL", price=190.0)
+        cache.update(ticker="BROKEN", price=50.0)
+
+        import app.chat.service as service
+
+        _real_execute_trade = service.execute_trade
+
+        def exploding_execute_trade(conn, price_cache, trade):
+            if trade.ticker == "BROKEN":
+                raise RuntimeError("boom — unexpected non-TradeError")
+            return _real_execute_trade(conn, price_cache, trade)
+
+        monkeypatch.setattr("app.chat.service.execute_trade", exploding_execute_trade)
+
+        response = await process_message(db_path, cache, MockMarketSource(), "hi")
+
+        assert response.error is None
+        assert len(response.trades) == 2
+        assert response.trades[0].status == "failed"
+        assert response.trades[0].error == "Trade failed: boom — unexpected non-TradeError"
+        assert response.trades[1].status == "executed"
