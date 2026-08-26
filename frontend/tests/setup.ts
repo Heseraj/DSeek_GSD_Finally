@@ -1,7 +1,14 @@
 // Test harness — shared mocks for every vitest file (03-RESEARCH.md:511,
 // 03-PATTERNS.md:428-434). Loaded via vitest.config.ts setupFiles.
 import '@testing-library/jest-dom/vitest';
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
+import { cleanup } from '@testing-library/react';
+
+// vitest.config.ts does not enable `globals`, so @testing-library/react's
+// auto-cleanup never registers. Without this, mounted components from earlier
+// tests stay subscribed to the shared zustand store and re-render on later
+// tests' setState — duplicate matches / cross-test DOM bleed. (03-02 Task 1)
+afterEach(() => cleanup());
 
 // ---------------------------------------------------------------------------
 // 1. EventSource class mock — constructor captures the instance into a shared
