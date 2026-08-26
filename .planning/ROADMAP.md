@@ -72,8 +72,29 @@ The market-data subsystem is already built and tested. The remaining work delive
   5. The chat panel sends messages, shows a loading state, and displays trade/watchlist confirmations inline
   6. Users can add and remove tickers from the watchlist UI
 
-**Plans**: TBD
+**Plans**: 7 plans
 **UI hint**: yes
+**Wave 1**
+
+- [ ] 03-01-PLAN.md — Foundation: scaffold (create-next-app, output:'export'), contracts, api helpers, zustand store, vitest harness (UI-01, UI-02, UI-07)
+
+**Wave 2** *(parallel)*
+
+- [ ] 03-02-PLAN.md — TRACER: SSE → store → flashing TickerRow → terminal shell + Header connection indicator (UI-01, UI-02, UI-07)
+- [ ] 03-04-PLAN.md — Portfolio visuals: heatmap treemap, P&L chart, positions table with live prices (UI-03)
+- [ ] 03-05-PLAN.md — Controls: TradeBar buy/sell, ChatPanel (503 contract), WatchlistPanel add/remove (UI-04, UI-05, UI-06)
+
+**Wave 3**
+
+- [ ] 03-03-PLAN.md — Charting: useLightweightChart hook, MainChart (selected ticker), sparklines (UI-01, UI-03)
+
+**Wave 4**
+
+- [ ] 03-06-PLAN.md — Integration: compose the terminal grid in page.tsx + phase gates (UI-01..UI-07)
+
+**Wave 5** *(checkpoint-gated)*
+
+- [ ] 03-07-PLAN.md — Dev-only CORS (A1, human gate) + manual browser verification (UI-01, UI-02, UI-07)
 
 ### Phase 4: Deployment & E2E
 
