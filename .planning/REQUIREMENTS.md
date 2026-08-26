@@ -18,20 +18,20 @@ Built in `backend/app/market/` (73 tests, 84% coverage). NOT rebuilt in this roa
 
 ### Database (DB)
 
-- [ ] **DB-01**: SQLite database lazily initializes on first request (no migration step) with full schema and seed data — one `$10,000` profile and ten default tickers
-- [ ] **DB-02**: FastAPI app entry point wires the market data source, price cache, SSE router, and all REST routers with lifespan startup/shutdown
-- [ ] **DB-03**: `GET /api/health` returns a healthy status for Docker/uptime checks
+- [x] **DB-01**: SQLite database lazily initializes on first request (no migration step) with full schema and seed data — one `$10,000` profile and ten default tickers
+- [x] **DB-02**: FastAPI app entry point wires the market data source, price cache, SSE router, and all REST routers with lifespan startup/shutdown
+- [x] **DB-03**: `GET /api/health` returns a healthy status for Docker/uptime checks
 
 ### Portfolio (PORT)
 
-- [ ] **PORT-01**: `GET /api/portfolio` returns positions, cash balance, total value, and unrealized P&L
+- [x] **PORT-01**: `GET /api/portfolio` returns positions, cash balance, total value, and unrealized P&L
 - [ ] **PORT-02**: `POST /api/portfolio/trade` executes market buy orders (instant fill, no fees, sufficient-cash validation)
 - [ ] **PORT-03**: `POST /api/portfolio/trade` executes market sell orders (sufficient-shares validation, average-cost update)
 - [ ] **PORT-04**: `GET /api/portfolio/history` returns value snapshots (recorded every 30s and after each trade)
 
 ### Watchlist (WATCH)
 
-- [ ] **WATCH-01**: `GET /api/watchlist` returns watched tickers with latest prices
+- [x] **WATCH-01**: `GET /api/watchlist` returns watched tickers with latest prices
 - [ ] **WATCH-02**: `POST /api/watchlist` adds a ticker to the watchlist
 - [ ] **WATCH-03**: `DELETE /api/watchlist/{ticker}` removes a ticker from the watchlist
 
@@ -91,14 +91,14 @@ Deferred to future release. Tracked but not in current roadmap.
 | MKT-02 | — | Validated |
 | MKT-03 | — | Validated |
 | MKT-04 | — | Validated |
-| DB-01 | Phase 1 | Pending |
-| DB-02 | Phase 1 | Pending |
-| DB-03 | Phase 1 | Pending |
-| PORT-01 | Phase 1 | Pending |
+| DB-01 | Phase 1 | Complete |
+| DB-02 | Phase 1 | Complete |
+| DB-03 | Phase 1 | Complete |
+| PORT-01 | Phase 1 | Complete |
 | PORT-02 | Phase 1 | Pending |
 | PORT-03 | Phase 1 | Pending |
 | PORT-04 | Phase 1 | Pending |
-| WATCH-01 | Phase 1 | Pending |
+| WATCH-01 | Phase 1 | Complete |
 | WATCH-02 | Phase 1 | Pending |
 | WATCH-03 | Phase 1 | Pending |
 | CHAT-01 | Phase 2 | Pending |
@@ -121,6 +121,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | TEST-02 | Phase 4 | Pending |
 
 **Coverage:**
+
 - Active v1 requirements: 28 total
 - Mapped to phases: 28
 - Unmapped: 0 ✓
