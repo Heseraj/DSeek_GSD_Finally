@@ -1,0 +1,13 @@
+{
+  "source_path": "C:/Local_Folder_Learning/AI_Engineer/AI_Coder/DSeek_GSD_Finally/planning/MARKET_DATA_SUMMARY.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "Market Data Backend — Summary",
+  "summary": "Summary of the completed market data backend subsystem providing live price simulation and real data via a unified interface.",
+  "scope": ["market data backend", "MarketDataSource", "SimulatorDataSource", "MassiveDataSource", "PriceCache", "GBM simulator", "Polygon.io", "SSE stream endpoint", "portfolio valuation", "trade execution"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

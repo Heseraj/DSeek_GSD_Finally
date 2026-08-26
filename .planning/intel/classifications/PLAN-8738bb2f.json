@@ -1,0 +1,13 @@
+{
+  "source_path": "C:/Local_Folder_Learning/AI_Engineer/AI_Coder/DSeek_GSD_Finally/planning/PLAN.md",
+  "type": "SPEC",
+  "confidence": "high",
+  "manifest_override": true,
+  "title": "FinAlly — AI Trading Workstation",
+  "summary": "Technical specification for FinAlly, an AI trading workstation covering architecture, market data, database schema, API endpoints, LLM integration, frontend design, Docker deployment, and testing.",
+  "scope": ["FinAlly", "FastAPI backend", "Next.js frontend", "SQLite database", "SSE streaming", "market data simulator", "LiteLLM/OpenRouter LLM integration", "Docker deployment", "Playwright E2E tests", "REST API"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}
