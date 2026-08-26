@@ -128,7 +128,7 @@ Each task was committed atomically:
 2. **Task 2: Backend contract types, apiUrl/apiFetch helpers, formatters, vitest harness** - `25074a7` (feat)
 3. **Task 3 (TDD): zustand store** — RED `a79326b` (test) → GREEN `b0ee6b2` (feat)
 
-**Plan metadata:** `(final commit below)`
+**Plan metadata:** `2abfc87` (docs: complete frontend foundation plan)
 
 _Note: Task 3 followed the RED→GREEN cycle — failing test commit `a79326b` preceded the passing implementation commit `b0ee6b2`. No refactor commit needed (implementation was minimal on first pass)._
 
