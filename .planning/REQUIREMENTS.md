@@ -32,8 +32,8 @@ Built in `backend/app/market/` (73 tests, 84% coverage). NOT rebuilt in this roa
 ### Watchlist (WATCH)
 
 - [x] **WATCH-01**: `GET /api/watchlist` returns watched tickers with latest prices
-- [ ] **WATCH-02**: `POST /api/watchlist` adds a ticker to the watchlist
-- [ ] **WATCH-03**: `DELETE /api/watchlist/{ticker}` removes a ticker from the watchlist
+- [x] **WATCH-02**: `POST /api/watchlist` adds a ticker to the watchlist
+- [x] **WATCH-03**: `DELETE /api/watchlist/{ticker}` removes a ticker from the watchlist
 
 ### Chat Assistant (CHAT)
 
@@ -99,8 +99,8 @@ Deferred to future release. Tracked but not in current roadmap.
 | PORT-03 | Phase 1 | Complete |
 | PORT-04 | Phase 1 | Complete |
 | WATCH-01 | Phase 1 | Complete |
-| WATCH-02 | Phase 1 | Pending |
-| WATCH-03 | Phase 1 | Pending |
+| WATCH-02 | Phase 1 | Complete |
+| WATCH-03 | Phase 1 | Complete |
 | CHAT-01 | Phase 2 | Pending |
 | CHAT-02 | Phase 2 | Pending |
 | CHAT-03 | Phase 2 | Pending |

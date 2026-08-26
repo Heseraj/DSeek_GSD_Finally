@@ -2,17 +2,17 @@
 gsd_state_version: 1.0
 current_phase: 01
 current_phase_name: Backend Foundation
-status: executing
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-08-26T07:48:10.590Z"
+status: verifying
+stopped_at: Completed 01-03-PLAN.md
+last_updated: "2026-08-26T07:58:30.652Z"
 last_activity: 2026-08-26
 last_activity_desc: Phase 01 execution started
-state_head: 94ab75073ee7b08cd038eb8118e84e017a487ac6
+state_head: 577a569e34ff53cd3e3a5db2224d0e3dc0e36406
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 ---
 
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-08-25)
 
 Phase: 01 (Backend Foundation) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-08-26 — Phase 01 execution started
 
 Progress: [░░░░░░░░░░] 0%
@@ -60,6 +60,7 @@ Progress: [░░░░░░░░░░] 0%
 |------|----------|-------|-------|
 | Phase 01 P01 | 47 | 3 tasks | 16 files |
 | Phase 01-backend-foundation P02 | 10 | 3 tasks | 7 files |
+| Phase 01 P01-03 | 14 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,9 @@ Recent decisions affecting current work:
 - [Phase 01]: Custom TradeError exception hierarchy in portfolio service.py (UnknownTickerError/InsufficientCashError/InsufficientSharesError) so routers map domain errors to 404/400 - deliberate extension of the no-custom-exceptions convention
 - [Phase 01]: record_snapshot mirrors get_portfolio valuation math inline (avoids circular import); test_history pins snapshot == live portfolio value so history cannot drift
 - [Phase 01]: HTTP trade tests use non-simulated tickers (IBM/ORCL/INTC) primed in the cache so the live simulator cannot race the fill price
+- [Phase 01]: Duplicate watchlist add returns 409 Conflict: add_ticker returns (ticker, created=False) on UNIQUE(user_id,ticker) violation; no duplicate row written and market source untouched (already tracking)
+- [Phase 01]: remove_ticker deletes first and calls market_source.remove_ticker only when a row was actually deleted; unknown-ticker deletes return 404 leaving source and price cache untouched
+- [Phase 01]: WatchlistAddRequest uses StringConstraints(strip_whitespace=True, min_length=1, max_length=12) so whitespace-only bodies are rejected with 422 (threat T-03-01); min_length alone would accept a single space
 
 ### Pending Todos
 
@@ -96,6 +100,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-26T07:48:10.559Z
-Stopped at: Completed 01-02-PLAN.md
+Last session: 2026-08-26T07:58:30.628Z
+Stopped at: Completed 01-03-PLAN.md
 Resume file: None

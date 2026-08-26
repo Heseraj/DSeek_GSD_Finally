@@ -26,11 +26,11 @@ The market-data subsystem is already built and tested. The remaining work delive
   4. A buy order reduces cash and creates/updates a position; a sell order increases cash and rejects insufficient shares
   5. Adding and removing tickers updates the watchlist, and `GET /api/health` reports healthy
 
-**Plans**: 2/3 plans executed
+**Plans**: 3/3 plans executed
 
 - [x] 01-01-PLAN.md — Database foundation + FastAPI wiring + health + SSE + read API (DB-01, DB-02, DB-03, PORT-01, WATCH-01)
 - [x] 01-02-PLAN.md — Portfolio trading (buy/sell) + history snapshots (PORT-02, PORT-03, PORT-04)
-- [ ] 01-03-PLAN.md — Watchlist mutation add/remove (WATCH-02, WATCH-03)
+- [x] 01-03-PLAN.md — Watchlist mutation add/remove (WATCH-02, WATCH-03)
 
 ### Phase 2: AI Chat Assistant
 
@@ -85,7 +85,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Backend Foundation | 2/3 | In Progress|  |
+| 1. Backend Foundation | 3/3 | In Progress|  |
 | 2. AI Chat Assistant | 0/- | Not started | - |
 | 3. Frontend Trading Terminal | 0/- | Not started | - |
 | 4. Deployment & E2E | 0/- | Not started | - |
