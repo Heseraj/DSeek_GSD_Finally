@@ -72,11 +72,11 @@ The market-data subsystem is already built and tested. The remaining work delive
   5. The chat panel sends messages, shows a loading state, and displays trade/watchlist confirmations inline
   6. Users can add and remove tickers from the watchlist UI
 
-**Plans**: 7 plans
+**Plans**: 1/7 plans executed
 **UI hint**: yes
 **Wave 1**
 
-- [ ] 03-01-PLAN.md — Foundation: scaffold (create-next-app, output:'export'), contracts, api helpers, zustand store, vitest harness (UI-01, UI-02, UI-07)
+- [x] 03-01-PLAN.md — Foundation: scaffold (create-next-app, output:'export'), contracts, api helpers, zustand store, vitest harness (UI-01, UI-02, UI-07)
 
 **Wave 2** *(parallel)*
 
@@ -119,5 +119,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Backend Foundation | 3/3 | Complete   | 2026-08-26 |
 | 2. AI Chat Assistant | 3/3 | Complete    | 2026-08-26 |
-| 3. Frontend Trading Terminal | 0/- | Not started | - |
+| 3. Frontend Trading Terminal | 1/7 | In Progress|  |
 | 4. Deployment & E2E | 0/- | Not started | - |
