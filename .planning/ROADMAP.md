@@ -46,9 +46,16 @@ The market-data subsystem is already built and tested. The remaining work delive
   5. With `LLM_MOCK=true`, chat returns deterministic responses without an API key
 
 **Plans**: 3 plans
+**Wave 1**
 
 - [ ] 02-01-PLAN.md — Dependencies (litellm, python-dotenv), .env loading, chat schemas & prompts (CHAT-01)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 02-02-PLAN.md — POST /api/chat mock-mode tracer: parse → auto-execute → persist pipeline (CHAT-01..CHAT-05)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 02-03-PLAN.md — Live LiteLLM branch (gpt-oss-120b/Cerebras) + 503 error contract + history/determinism tests (CHAT-01, CHAT-04, CHAT-05)
 
 ### Phase 3: Frontend Trading Terminal
