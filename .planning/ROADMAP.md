@@ -7,7 +7,7 @@ The market-data subsystem is already built and tested. The remaining work delive
 ## Phases
 
 - [x] **Phase 1: Backend Foundation** - SQLite persistence, FastAPI wiring, portfolio + watchlist APIs (completed 2026-08-26)
-- [ ] **Phase 2: AI Chat Assistant** - LLM integration with structured outputs and auto-execution
+- [x] **Phase 2: AI Chat Assistant** - LLM integration with structured outputs and auto-execution (completed 2026-08-26)
 - [ ] **Phase 3: Frontend Trading Terminal** - Bloomberg-style UI with streaming prices and visualizations
 - [ ] **Phase 4: Deployment & E2E** - Single Docker container, persistent SQLite, Playwright tests
 
@@ -97,6 +97,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Backend Foundation | 3/3 | Complete   | 2026-08-26 |
-| 2. AI Chat Assistant | 3/3 | In Progress|  |
+| 2. AI Chat Assistant | 3/3 | Complete    | 2026-08-26 |
 | 3. Frontend Trading Terminal | 0/- | Not started | - |
 | 4. Deployment & E2E | 0/- | Not started | - |
