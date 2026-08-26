@@ -1,10 +1,28 @@
-"""Portfolio valuation service."""
+"""Portfolio valuation and trade execution service."""
 
 from __future__ import annotations
 
 import sqlite3
+import uuid
+from datetime import datetime, timezone
 
 from app.market import PriceCache
+
+
+class TradeError(Exception):
+    """Base class for trade validation failures."""
+
+
+class UnknownTickerError(TradeError):
+    """Raised when a trade references a ticker with no current price."""
+
+
+class InsufficientCashError(TradeError):
+    """Raised when a buy order costs more than the available cash."""
+
+
+class InsufficientSharesError(TradeError):
+    """Raised when a sell order exceeds the owned quantity."""
 
 
 def get_portfolio(conn: sqlite3.Connection, price_cache: PriceCache) -> dict:
@@ -61,3 +79,73 @@ def get_portfolio(conn: sqlite3.Connection, price_cache: PriceCache) -> dict:
         "total_value": total_value,
         "unrealized_pnl": total_unrealized_pnl,
     }
+
+
+def execute_trade(conn: sqlite3.Connection, price_cache: PriceCache, trade) -> dict:
+    """Execute a market order and return the updated portfolio.
+
+    The full read-modify-write — cash update, position upsert, trade insert —
+    runs inside a single SQLite transaction (`with conn:`), so any failure
+    rolls the entire order back (threat T-02-02). The fill price is read from
+    the price cache, never from the client.
+    """
+    ticker = trade.ticker
+    price = price_cache.get_price(ticker)
+    if price is None:
+        raise UnknownTickerError(f"No current price for ticker {ticker}")
+
+    with conn:
+        profile = conn.execute(
+            "SELECT cash_balance FROM users_profile WHERE id = ?", ("default",)
+        ).fetchone()
+        cash_balance = float(profile["cash_balance"]) if profile else 0.0
+
+        position = conn.execute(
+            "SELECT quantity, avg_cost FROM positions WHERE user_id = ? AND ticker = ?",
+            ("default", ticker),
+        ).fetchone()
+
+        order_cost = round(price * trade.quantity, 2)
+        now = datetime.now(timezone.utc).isoformat()
+
+        if trade.side != "buy":
+            # Sell-side execution arrives with PORT-03.
+            raise ValueError(f"Unsupported trade side: {trade.side}")
+
+        if order_cost > cash_balance:
+            raise InsufficientCashError(
+                f"Insufficient cash: order costs {order_cost:.2f} but cash is {cash_balance:.2f}"
+            )
+
+        new_cash = round(cash_balance - order_cost, 2)
+        conn.execute(
+            "UPDATE users_profile SET cash_balance = ? WHERE id = ?",
+            (new_cash, "default"),
+        )
+
+        if position is None:
+            conn.execute(
+                "INSERT INTO positions (id, user_id, ticker, quantity, avg_cost, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (str(uuid.uuid4()), "default", ticker, trade.quantity, price, now),
+            )
+        else:
+            old_quantity = float(position["quantity"])
+            old_avg_cost = float(position["avg_cost"])
+            new_quantity = round(old_quantity + trade.quantity, 4)
+            new_avg_cost = round(
+                (old_quantity * old_avg_cost + trade.quantity * price) / new_quantity, 4
+            )
+            conn.execute(
+                "UPDATE positions SET quantity = ?, avg_cost = ?, updated_at = ? "
+                "WHERE user_id = ? AND ticker = ?",
+                (new_quantity, new_avg_cost, now, "default", ticker),
+            )
+
+        conn.execute(
+            "INSERT INTO trades (id, user_id, ticker, side, quantity, price, executed_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (str(uuid.uuid4()), "default", ticker, trade.side, trade.quantity, price, now),
+        )
+
+    return get_portfolio(conn, price_cache)
