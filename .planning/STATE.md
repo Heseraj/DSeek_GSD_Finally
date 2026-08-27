@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 4
 current_phase_name: Deployment & E2E
 status: executing
-stopped_at: Phase 3 complete, ready to plan Phase 4
-last_updated: "2026-08-27T05:13:40.666Z"
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-08-27T05:34:35.197Z"
 last_activity: 2026-08-26
-last_activity_desc: Phase 3 complete, transitioned to Phase 4
-state_head: 1df373b5f8d418b1a5951726073d7ed416e9dede
+last_activity_desc: Phase 4 execution started
+state_head: 187ea80faf1d1d411051a05afdb4b4cd115020de
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 17
-  completed_plans: 13
+  completed_plans: 14
   percent: 75
 ---
 
@@ -23,16 +23,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-25)
 
 **Core value:** A user runs one Docker command and immediately gets a working Bloomberg-style trading terminal — streaming prices, instant simulated trades, portfolio analytics, and an AI copilot that trades on their behalf.
-**Current focus:** Phase 3 — Frontend Trading Terminal
+**Current focus:** Phase 4 — Deployment & E2E
 
 ## Current Position
 
-Phase: 4 (Deployment & E2E) — READY TO EXECUTE
-Plan: Not started
+Phase: 4 (Deployment & E2E) — EXECUTING
+Plan: 2 of 4
 Status: Ready to execute
-Last activity: 2026-08-26 — Phase 3 complete, transitioned to Phase 4
+Last activity: 2026-08-26 — Phase 4 execution started
 
-Progress: [█████░░░░░] 50%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
@@ -71,6 +71,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P05 | 10 | 3 tasks | 6 files |
 | Phase 03-frontend-trading-terminal P03 | 11 | 2 tasks | 6 files |
 | Phase 03-frontend-trading-terminal P06 | 6 | 2 tasks | 5 files |
+| Phase 4 P04-01 | 20 | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -115,6 +116,7 @@ Recent decisions affecting current work:
 - [Phase 03]: MainChart subscribes three per-slice selectors (selectedTicker + its history + its latest PriceUpdate) — update() needs Math.floor(timestamp), and the PriceUpdate frame is its only carrier; per-slice isolation preserved — 03-03 Task 1 — the plan prose named two selectors, but the streaming boundary requires the frame timestamp
 - [Phase 03]: Sparkline data prop optional (default []) so useStore(s => s.histories[ticker])'s stable undefined never fabricates a new [] per render at 20Hz — 03-03 Task 2 — zustand selector churn (Pitfall 6)
 - [Phase 3]: Remove wiring lives in TickerRow (the UI-06 single delivery point): WatchlistPanel renders the real TickerRow per entry and each row owns its DELETE via raw fetch with res.status checked before any body read; 204 and 404 both prune locally (pruneTicker) + refetchWatchlist; stopPropagation so remove never triggers row click-to-select — 03-06-PLAN Task 1 names TickerRow as the delivery point; apiFetch's unconditional res.json() rejects on the backend's 204 empty body (03-PATTERNS.md:143)
+- [Phase 4]: FINALLY_DB_PATH env read (default db/finally.db) converts the volume mount from WORKDIR coincidence into an explicit, testable contract (RESEARCH A4); app.frontend() with check_dir=False keeps backend pytest importable without a frontend build
 
 ### Pending Todos
 
@@ -134,6 +136,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-27T01:07:08.609Z
-Stopped at: Phase 3 complete, ready to plan Phase 4
+Last session: 2026-08-27T05:34:34.466Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None
