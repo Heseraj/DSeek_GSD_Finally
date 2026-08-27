@@ -89,3 +89,12 @@ class TestAppSmoke:
         finally:
             server.should_exit = True
             thread.join(timeout=10)
+
+    def test_db_path_reads_finally_db_path_env(self, tmp_path, monkeypatch):
+        """Test that DB_PATH honors the FINALLY_DB_PATH environment variable."""
+        monkeypatch.setenv("FINALLY_DB_PATH", str(tmp_path / "env.db"))
+        import importlib, app.main as main
+
+        main.DB_PATH = None  # or del attribute — force re-read path
+        importlib.reload(main)
+        assert main.DB_PATH == str(tmp_path / "env.db")
