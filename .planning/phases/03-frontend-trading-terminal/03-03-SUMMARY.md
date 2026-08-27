@@ -112,7 +112,7 @@ Each task was committed atomically (TDD RED → GREEN → REFACTOR):
 
 **Follow-up refactor:** `e8962e7` (refactor) — stable refs added to effect dep arrays to clear the exhaustive-deps lint warnings.
 
-**Plan metadata:** (pending — final docs commit)
+**Plan metadata:** `d548878` (docs: complete charting plan)
 
 ## Files Created/Modified
 
