@@ -58,7 +58,7 @@ Built in `backend/app/market/` (73 tests, 84% coverage). NOT rebuilt in this roa
 - [x] **DEPLOY-01**: Single Docker container on port 8000 serves FastAPI + static Next.js export
 - [x] **DEPLOY-02**: Multi-stage Dockerfile (Node 20 build → Python 3.12 runtime)
 - [x] **DEPLOY-03**: SQLite persists via named volume (`finally-data:/app/db`)
-- [ ] **DEPLOY-04**: Idempotent start/stop scripts (macOS/Linux shell + Windows PowerShell)
+- [x] **DEPLOY-04**: Idempotent start/stop scripts (macOS/Linux shell + Windows PowerShell)
 
 ### Testing (TEST)
 
@@ -116,7 +116,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | DEPLOY-01 | Phase 4 | Complete |
 | DEPLOY-02 | Phase 4 | Complete |
 | DEPLOY-03 | Phase 4 | Complete |
-| DEPLOY-04 | Phase 4 | Pending |
+| DEPLOY-04 | Phase 4 | Complete |
 | TEST-01 | Phase 4 | Pending |
 | TEST-02 | Phase 4 | Pending |
 
