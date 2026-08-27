@@ -13,6 +13,14 @@ services:
       - LLM_MOCK=true
     volumes:
       - finally-test-data:/app/db
+    networks:
+      default:
+        aliases:
+          # BLOCKER FIX (04-04): Chromium 140+ HTTPS-upgrades the single-label
+          # service name `app` (307 -> https -> ERR_SSL_PROTOCOL_ERROR against a
+          # plain-HTTP server). The `.test` TLD is reserved (RFC 2606) and
+          # dotted hostnames are exempt from the upgrade — verified empirically.
+          - app.test
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
       interval: 2s
@@ -28,9 +36,10 @@ services:
       app:
         condition: service_healthy
     environment:
-      - PLAYWRIGHT_BASE_URL=http://app:8000
+      - PLAYWRIGHT_BASE_URL=http://app.test:8000
     volumes:
       - ./tests:/test/tests
+      - ./playwright.config.ts:/test/playwright.config.ts
     working_dir: /test
     command: npx playwright test
 volumes:
