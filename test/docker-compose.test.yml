@@ -1,0 +1,37 @@
+# TEST-01 compose stack — RESEARCH.md:299-331 skeleton + BLOCKER FIX:
+# playwright service sits behind profiles: ["e2e"] so `docker compose up`
+# never auto-runs the suite (bare `up` starts app only); run-e2e invokes
+# playwright explicitly via `run --rm playwright`.
+#
+# finally-test-data is a DIFFERENT volume from production finally-data —
+# E2E never touches production data (Pattern 4). run-e2e leads with `down -v`
+# for the deterministic seeded $10k fresh start (Pitfall 4).
+services:
+  app:
+    build: ..
+    environment:
+      - LLM_MOCK=true
+    volumes:
+      - finally-test-data:/app/db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  playwright:
+    profiles: ["e2e"]
+    build:
+      context: .
+      dockerfile: playwright.Dockerfile
+    ipc: host
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      - PLAYWRIGHT_BASE_URL=http://app:8000
+    volumes:
+      - ./tests:/test/tests
+    working_dir: /test
+    command: npx playwright test
+volumes:
+  finally-test-data:
