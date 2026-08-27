@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 3
 current_phase_name: Frontend Trading Terminal
 status: executing
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-08-27T00:53:53.287Z"
+stopped_at: Completed 03-06-PLAN.md
+last_updated: "2026-08-27T01:07:20.851Z"
 last_activity: 2026-08-26
 last_activity_desc: Phase 3 execution started
-state_head: e8962e7c38c1bb752beaa44498a4ebd9cc578c8e
+state_head: 6b64c4f1ba238385faea20cd516c8b7d46ec22e0
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 13
-  completed_plans: 11
+  completed_plans: 12
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-08-25)
 ## Current Position
 
 Phase: 3 (Frontend Trading Terminal) — EXECUTING
-Plan: 6 of 7
+Plan: 7 of 7
 Status: Ready to execute
 Last activity: 2026-08-26 — Phase 3 execution started
 
@@ -69,6 +69,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03-frontend-trading-terminal P04 | 9 | 3 tasks | 6 files |
 | Phase 03 P05 | 10 | 3 tasks | 6 files |
 | Phase 03-frontend-trading-terminal P03 | 11 | 2 tasks | 6 files |
+| Phase 03-frontend-trading-terminal P06 | 6 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -112,6 +113,7 @@ Recent decisions affecting current work:
 - [Phase 03]: WatchlistPanel DELETE uses a raw fetch with a res.status check before ANY body read - apiFetch's unconditional res.json() rejects on the backend's 204 empty body (03-PATTERNS.md:143); the 204 branch never touches the body — WatchlistPanel DELETE uses a raw fetch with a res.status check before ANY body read - apiFetch's unconditional res.json() rejects on the backend's 204 empty body (03-PATTERNS.md:143); the 204 branch never touches the body
 - [Phase 03]: MainChart subscribes three per-slice selectors (selectedTicker + its history + its latest PriceUpdate) — update() needs Math.floor(timestamp), and the PriceUpdate frame is its only carrier; per-slice isolation preserved — 03-03 Task 1 — the plan prose named two selectors, but the streaming boundary requires the frame timestamp
 - [Phase 03]: Sparkline data prop optional (default []) so useStore(s => s.histories[ticker])'s stable undefined never fabricates a new [] per render at 20Hz — 03-03 Task 2 — zustand selector churn (Pitfall 6)
+- [Phase 3]: Remove wiring lives in TickerRow (the UI-06 single delivery point): WatchlistPanel renders the real TickerRow per entry and each row owns its DELETE via raw fetch with res.status checked before any body read; 204 and 404 both prune locally (pruneTicker) + refetchWatchlist; stopPropagation so remove never triggers row click-to-select — 03-06-PLAN Task 1 names TickerRow as the delivery point; apiFetch's unconditional res.json() rejects on the backend's 204 empty body (03-PATTERNS.md:143)
 
 ### Pending Todos
 
@@ -131,6 +133,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-27T00:53:52.963Z
-Stopped at: Completed 03-03-PLAN.md
+Last session: 2026-08-27T01:07:08.609Z
+Stopped at: Completed 03-06-PLAN.md
 Resume file: None
