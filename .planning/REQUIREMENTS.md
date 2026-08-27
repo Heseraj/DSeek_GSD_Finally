@@ -45,13 +45,13 @@ Built in `backend/app/market/` (73 tests, 84% coverage). NOT rebuilt in this roa
 
 ### Frontend UI (UI)
 
-- [ ] **UI-01**: Single-page terminal-style layout with dark theme (watchlist, chart, portfolio, chat, header)
-- [ ] **UI-02**: Live price streaming with green/red flash animations and sparklines via `EventSource`
+- [x] **UI-01**: Single-page terminal-style layout with dark theme (watchlist, chart, portfolio, chat, header)
+- [x] **UI-02**: Live price streaming with green/red flash animations and sparklines via `EventSource`
 - [x] **UI-03**: Portfolio heatmap (treemap), P&L line chart, and positions table render with live data
 - [x] **UI-04**: Trade bar for buy/sell with instant fill and live cash/portfolio updates
 - [x] **UI-05**: AI chat panel with history, loading indicator, and inline trade/watchlist confirmations
 - [x] **UI-06**: Users can add/remove tickers from the watchlist in the UI
-- [ ] **UI-07**: Connection status indicator (green/yellow/red) and live portfolio value in the header
+- [x] **UI-07**: Connection status indicator (green/yellow/red) and live portfolio value in the header
 
 ### Deployment (DEPLOY)
 
@@ -106,13 +106,13 @@ Deferred to future release. Tracked but not in current roadmap.
 | CHAT-03 | Phase 2 | Complete |
 | CHAT-04 | Phase 2 | Complete |
 | CHAT-05 | Phase 2 | Complete |
-| UI-01 | Phase 3 | Pending |
-| UI-02 | Phase 3 | Pending |
+| UI-01 | Phase 3 | Complete |
+| UI-02 | Phase 3 | Complete |
 | UI-03 | Phase 3 | Complete |
 | UI-04 | Phase 3 | Complete |
 | UI-05 | Phase 3 | Complete |
 | UI-06 | Phase 3 | Complete |
-| UI-07 | Phase 3 | Pending |
+| UI-07 | Phase 3 | Complete |
 | DEPLOY-01 | Phase 4 | Pending |
 | DEPLOY-02 | Phase 4 | Pending |
 | DEPLOY-03 | Phase 4 | Pending |

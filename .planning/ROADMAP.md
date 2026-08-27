@@ -8,7 +8,7 @@ The market-data subsystem is already built and tested. The remaining work delive
 
 - [x] **Phase 1: Backend Foundation** - SQLite persistence, FastAPI wiring, portfolio + watchlist APIs (completed 2026-08-26)
 - [x] **Phase 2: AI Chat Assistant** - LLM integration with structured outputs and auto-execution (completed 2026-08-26)
-- [ ] **Phase 3: Frontend Trading Terminal** - Bloomberg-style UI with streaming prices and visualizations
+- [x] **Phase 3: Frontend Trading Terminal** - Bloomberg-style UI with streaming prices and visualizations (completed 2026-08-26)
 - [ ] **Phase 4: Deployment & E2E** - Single Docker container, persistent SQLite, Playwright tests
 
 ## Phase Details
@@ -94,7 +94,7 @@ The market-data subsystem is already built and tested. The remaining work delive
 
 **Wave 5** *(checkpoint-gated)*
 
-- [ ] 03-07-PLAN.md — Dev-only CORS (A1, human gate) + manual browser verification (UI-01, UI-02, UI-07)
+- [x] 03-07-PLAN.md — Dev-only CORS (A1, human gate) + manual browser verification (UI-01, UI-02, UI-07)
 
 ### Phase 4: Deployment & E2E
 
@@ -119,5 +119,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Backend Foundation | 3/3 | Complete   | 2026-08-26 |
 | 2. AI Chat Assistant | 3/3 | Complete    | 2026-08-26 |
-| 3. Frontend Trading Terminal | 6/7 | In Progress|  |
+| 3. Frontend Trading Terminal | 7/7 | Complete    | 2026-08-26 |
 | 4. Deployment & E2E | 0/- | Not started | - |
