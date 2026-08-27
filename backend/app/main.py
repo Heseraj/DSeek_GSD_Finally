@@ -10,6 +10,7 @@ from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.chat import router as chat_router
 from app.db import init_db
@@ -76,6 +77,15 @@ app.include_router(create_stream_router(price_cache))
 app.include_router(portfolio_router)
 app.include_router(watchlist_router)
 app.include_router(chat_router)
+
+# DEV ONLY — assumption A1 (user-confirmed): unlocks next dev :3000 -> FastAPI :8000.
+# Inert in production (static-export builds are same-origin; CORS never exercised).
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/api/health")
