@@ -1,21 +1,21 @@
 // Watchlist panel — add (200/409) and remove (204/404) with store pruning
-// (UI-06, 03-05 Task 3). Mirrors watchlist/router.py:32-73 semantics verbatim:
-// POST /api/watchlist -> 200 {ticker} | 409 duplicate; DELETE
-// /api/watchlist/{ticker} -> 204 (no body) | 404. The DELETE is a RAW fetch —
-// NOT apiFetch, whose unconditional res.json() rejects on the backend's 204
-// empty body (03-PATTERNS.md:143); res.status is checked BEFORE any body read.
-// On a successful 204 the store prunes prices + histories + tickSeq for that
-// ticker (Pitfall 5, 03-RESEARCH.md:290-293) and the watchlist refetches.
+// (UI-06, 03-05 Task 3 + 03-06 Task 1). Mirrors watchlist/router.py:32-73
+// semantics verbatim: POST /api/watchlist -> 200 {ticker} | 409 duplicate;
+// DELETE /api/watchlist/{ticker} -> 204 (no body) | 404. The add POST goes
+// through apiFetch (a JSON body is expected); the per-row REMOVE lives in
+// TickerRow (03-06 Task 1) as a RAW fetch — NOT apiFetch, whose unconditional
+// res.json() rejects on the backend's 204 empty body (03-PATTERNS.md:143);
+// res.status is checked BEFORE any body read. Rows are the real TickerRow
+// composition (price + sparkline + flash + click-to-select + remove); the
+// 03-05 self-contained row shell is replaced here by design (same-wave swap).
 // Client pre-validation is UX-only (TickerStr ≤ 12 chars — backend Pydantic
-// stays authoritative, threat T-03-08). Rows are a self-contained shell
-// (per-row price selector, Pitfall 6); 03-06 Task 1 swaps in the real
-// TickerRow composition (same-wave dependency risk).
+// stays authoritative, threat T-03-08).
 'use client';
 
 import { useState } from 'react';
-import { apiFetch, apiUrl } from '../../lib/api';
-import { fmtCurrency } from '../../lib/format';
+import { apiFetch } from '../../lib/api';
 import { useStore } from '../../store/useStore';
+import { TickerRow } from './TickerRow';
 
 const TICKER_RE = /^[A-Z0-9.]{1,12}$/;
 
@@ -31,7 +31,6 @@ export function WatchlistPanel() {
   const [ticker, setTicker] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
-  const [removing, setRemoving] = useState<string | null>(null);
 
   const add = async () => {
     const t = ticker.trim().toUpperCase();
@@ -54,28 +53,6 @@ export function WatchlistPanel() {
       else setError('Failed to add ticker');
     } finally {
       setAdding(false);
-    }
-  };
-
-  const remove = async (t: string) => {
-    setRemoving(t);
-    setError(null);
-    try {
-      const res = await fetch(apiUrl(`/api/watchlist/${t}`), { method: 'DELETE' });
-      if (res.status === 204) {
-        // Pitfall 5: prune prices + histories + tickSeq so no stale
-        // sparkline/price residue survives a re-add.
-        useStore.getState().pruneTicker(t);
-        await useStore.getState().refetchWatchlist();
-      } else if (res.status === 404) {
-        setError(`Ticker not on watchlist: ${t}`);
-      } else {
-        setError('Failed to remove ticker');
-      }
-    } catch {
-      setError('Failed to remove ticker');
-    } finally {
-      setRemoving(null);
     }
   };
 
@@ -102,46 +79,9 @@ export function WatchlistPanel() {
       {error && <div className="border-b border-border px-3 py-1 text-xs text-red-400">{error}</div>}
       <div className="flex-1 overflow-y-auto">
         {watchlist.map((w) => (
-          <Row
-            key={w.ticker}
-            ticker={w.ticker}
-            fallback={w.price}
-            removing={removing === w.ticker}
-            onRemove={() => remove(w.ticker)}
-          />
+          <TickerRow key={w.ticker} ticker={w.ticker} fallbackPrice={w.price} />
         ))}
       </div>
-    </div>
-  );
-}
-
-function Row({
-  ticker,
-  fallback,
-  removing,
-  onRemove,
-}: {
-  ticker: string;
-  fallback?: number;
-  removing: boolean;
-  onRemove: () => void;
-}) {
-  const update = useStore((s) => s.prices[ticker]); // per-row price slice (Pitfall 6)
-  return (
-    <div data-ticker={ticker} className="flex items-center justify-between border-b border-border px-3 py-2">
-      <span className="font-mono text-sm font-semibold text-foreground">{ticker}</span>
-      <span className="font-mono text-sm text-foreground">
-        {fmtCurrency(update?.price ?? fallback ?? 0)}
-      </span>
-      <button
-        type="button"
-        aria-label={`Remove ${ticker}`}
-        disabled={removing}
-        onClick={onRemove}
-        className="rounded px-1.5 text-xs text-gray-500 transition-colors hover:text-red-400 disabled:opacity-50"
-      >
-        ×
-      </button>
     </div>
   );
 }
