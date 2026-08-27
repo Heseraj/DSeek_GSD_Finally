@@ -1,0 +1,8 @@
+# dependencies
+/node_modules
+
+# Playwright test artifacts (generated when the suite runs)
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
