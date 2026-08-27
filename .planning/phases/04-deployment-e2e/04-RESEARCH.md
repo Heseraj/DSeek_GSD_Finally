@@ -393,20 +393,23 @@ docker rm -f finally 2>/dev/null || true                       # volume finally-
 | A7 | E2E runs serial (`workers: 1`, `fullyParallel: false`) against one mutable DB; "fresh start" is guaranteed by `down -v` in the orchestration script, not by test isolation. | Patterns | If parallelism is later wanted, each test would need its own DB path via `FINALLY_DB_PATH` — out of scope. |
 | A8 | `frontend/out/` rebuilds in the Dockerfile from source (never copied from the host) — `out/` is gitignored and must not leak into the image via the context. | Dockerfile / .dockerignore | `.dockerignore` must exclude `frontend/out` and `frontend/.next`; forgetting only wastes build time (source copy wins), it does not corrupt the build. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Node 20 vs Node 22 base (A1 — needs confirmation)**
    - What we know: DEPLOY-02 says "Node 20 build"; Node 20 reached EOL 2026-04 (security unsupported); Next 16.3.3 requires Node >=20.9; host runs Node 24.19.0.
    - What's unclear: whether the user prefers literal compliance (node:20-slim, EOL base) or the maintained alternative (node:22-slim).
    - Recommendation: `node:22-slim`; note the deviation in the plan and gate behind `checkpoint:human-verify` if the user wants strict compliance.
+   - **RESOLVED (2026-08-27):** User confirmed **node:22-slim** (recommended) over the EOL Node 20. Locked decision A1; carried into 04-01 Task 2 Dockerfile.
 2. **`FINALLY_DB_PATH` env support in main.py (A4)**
    - What we know: `DB_PATH` is hardcoded [VERIFIED: main.py:33]; the old abandoned image set an inert `FINALLY_DB_PATH`.
    - What's unclear: none technically — the change is 1 line, tests unaffected.
    - Recommendation: adopt it; it converts "volume works by WORKDIR coincidence" into an explicit, testable contract.
+   - **RESOLVED (2026-08-27):** Adopted in 04-01 Task 1 — `DB_PATH = os.environ.get("FINALLY_DB_PATH", "db/finally.db")` + the PATTERNS `import os` gotcha + a new env-read unit test.
 3. **E2E `setOffline` socket-teardown behavior (A3)**
    - What we know: `context.setOffline` is documented; the frontend reconnect path is verified (`onerror` → `reconnecting`, never `close()`).
    - What's unclear: whether offline mode closes an already-open SSE socket in the pinned Chromium.
    - Recommendation: build the test with `setOffline` first; if the dot never leaves `connected`, switch to CDP `Network.emulateNetworkConditions` (documented fallback in the plan).
+   - **RESOLVED (2026-08-27):** Decision procedure locked in 04-04 Task 2 — setOffline primary, CDP fallback; the working trigger is recorded in the 04-04 SUMMARY after the first E2E run.
 
 ## Environment Availability
 
