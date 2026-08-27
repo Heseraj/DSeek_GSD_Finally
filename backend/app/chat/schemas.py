@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field, StringConstraints, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
 
 class ChatRequest(BaseModel):
@@ -15,6 +15,8 @@ class ChatRequest(BaseModel):
 
 class TradeAction(BaseModel):
     """A trade proposed by the LLM; validated like a manual TradeRequest."""
+
+    model_config = ConfigDict(extra="forbid")
 
     ticker: str
     quantity: float = Field(gt=0, description="Number of shares; fractional shares supported")
@@ -29,6 +31,8 @@ class TradeAction(BaseModel):
 
 class WatchlistChange(BaseModel):
     """A watchlist change proposed by the LLM (threat T-02-01: ticker bounded to 12 chars)."""
+
+    model_config = ConfigDict(extra="forbid")
 
     ticker: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=12)]
     action: Literal["add", "remove"]
@@ -55,6 +59,8 @@ class WatchlistChangeResult(BaseModel):
 
 class ChatProposal(BaseModel):
     """The LLM output envelope: status-less proposals parsed via model_validate_json."""
+
+    model_config = ConfigDict(extra="forbid")
 
     message: str
     trades: list[TradeAction] = []
