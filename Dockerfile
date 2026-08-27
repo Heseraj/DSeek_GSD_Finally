@@ -10,7 +10,7 @@ COPY frontend/ .
 RUN npm run build
 
 # Stage 2 - backend deps (uv + python 3.12, two-phase sync)
-FROM ghcr.io/astral-sh/uv:python3.12-trixie-slim AS backend-deps
+FROM ghcr.io/astral-sh/uv:0.12.6-python3.12-trixie-slim AS backend-deps
 WORKDIR /app
 COPY backend/pyproject.toml backend/uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --locked --no-install-project --no-editable
@@ -18,7 +18,7 @@ COPY backend/ .
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --locked --no-editable
 
 # Stage 3 - runtime: venv + static export only; no uv, no source, no node
-FROM ghcr.io/astral-sh/uv:python3.12-trixie-slim
+FROM ghcr.io/astral-sh/uv:0.12.6-python3.12-trixie-slim
 WORKDIR /app
 COPY --from=backend-deps /app/.venv /app/.venv
 COPY --from=frontend-build /build/out /app/static

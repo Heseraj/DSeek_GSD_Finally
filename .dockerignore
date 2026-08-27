@@ -11,4 +11,6 @@ backend/.venv
 .pytest_cache
 .ruff_cache
 .planning/
-.env
+**/.env
+**/.env.local
+**/.env.*
