@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 4
 current_phase_name: Deployment & E2E
 status: executing
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-08-27T05:43:21.235Z"
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-08-27T05:55:52.385Z"
 last_activity: 2026-08-26
 last_activity_desc: Phase 4 execution started
-state_head: 498b7ed31e50db0c6c5ea4ea34ee1df68ed672da
+state_head: 433029a635aa96689da32e1db7143be39e303dd0
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 17
-  completed_plans: 15
+  completed_plans: 16
   percent: 75
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-08-25)
 ## Current Position
 
 Phase: 4 (Deployment & E2E) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-08-26 — Phase 4 execution started
 
@@ -73,6 +73,7 @@ Progress: [████████░░] 75%
 | Phase 03-frontend-trading-terminal P06 | 6 | 2 tasks | 5 files |
 | Phase 4 P04-01 | 20 | 3 tasks | 8 files |
 | Phase 04-02 P04-02 | 10 | 2 tasks | 4 files |
+| Phase 04 P04-03 | 15 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -122,6 +123,9 @@ Recent decisions affecting current work:
 - [Phase 04-02]: Health-gated URL echo in BOTH script pairs: URL prints only after /api/health responds; PowerShell exits 1 when the 30x2s poll is exhausted (mirrors sh set -e fail-fast)
 - [Phase 04-02]: No --rm and no --workers anywhere: named container is the stop model; single-process invariant preserved
 - [Phase 04-02]: Conditional --env-file .env only when the file exists - keys reach the container at runtime, never baked (T-04-01)
+- [Phase 04]: Playwright service sits behind profiles: [e2e] so bare docker compose up never auto-runs the suite; run-e2e invokes it explicitly via run --rm playwright (BLOCKER FIX per plan) — Without a profile, docker compose up starts the playwright container whose command auto-runs the suite and mutates finally-test-data before the explicit invocation
+- [Phase 04]: Bare docker compose build skips profile-guarded services by design; the playwright image requires --profile e2e build (or is auto-built by docker compose run when missing) — Compose profiles filter multi-service commands; run-e2e's run --rm playwright auto-build path was empirically verified (image removed, rebuilt from cached MCR base)
+- [Phase 04]: test/.gitignore added (Rule 2) - root .gitignore is Python-oriented with no node_modules pattern; dry-run git add test/ staged ~300 node_modules files — Repo convention is per-package .gitignore (frontend/.gitignore); node_modules must not be committed - npm ci from lockfile is the reproducibility mechanism
 
 ### Pending Todos
 
@@ -141,6 +145,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-27T05:42:55.230Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-08-27T05:55:40.475Z
+Stopped at: Completed 04-03-PLAN.md
 Resume file: None
