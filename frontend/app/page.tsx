@@ -9,6 +9,7 @@
 
 import { useEffect } from 'react';
 import { usePriceStream } from '../hooks/usePriceStream';
+import { Header } from '../components/header/Header';
 import { TickerRow } from '../components/watchlist/TickerRow';
 import { useStore } from '../store/useStore';
 
@@ -25,9 +26,9 @@ export default function Home() {
 
   return (
     <div className="flex h-screen flex-col bg-background text-foreground">
-      {/* Header slot — replaced by <Header /> (connection dot + live total) in 03-02 Task 2 */}
+      {/* Header slot — the real <Header /> (connection dot + live total) */}
       <div data-testid="header-slot">
-        <div className="h-12 border-b border-border bg-panel" />
+        <Header />
       </div>
 
       <div className="grid flex-1 grid-cols-[16rem_1fr_20rem] overflow-hidden">

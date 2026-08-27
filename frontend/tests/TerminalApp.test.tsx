@@ -141,9 +141,14 @@ describe('TerminalApp', () => {
     const evil = '<img src=x onerror=alert(1)>';
     act(() => useStore.setState({ watchlist: [{ ticker: evil }] }));
 
-    expect(screen.getByText(evil)).toBeInTheDocument(); // rendered as a text node
-    expect(container.innerHTML).not.toContain('<img');
-    expect(container.innerHTML).not.toContain('<script');
+    // The string renders as a TEXT node (React-escaped in HTML), never as
+    // parsed markup. Note: the raw string may appear inside attribute VALUES
+    // (data-ticker/testid/aria-label) — React assigns those via setAttribute,
+    // so the browser never parses them as HTML. The security property is
+    // element-level: no element was materialized from the string.
+    expect(screen.getByText(evil)).toBeInTheDocument();
+    expect(container.querySelectorAll('img').length).toBe(0);
+    expect(container.querySelectorAll('script').length).toBe(0);
     expect(container.querySelectorAll('[onerror]').length).toBe(0);
   });
 });
