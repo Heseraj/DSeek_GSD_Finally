@@ -1,11 +1,33 @@
-// Component tests for TickerRow (03-02 Task 1) — Tests 4 & 5 from
-// 03-02-PLAN.md <behavior>: formatted price + flash class per direction,
-// key-remount on tickSeq change (flash restart), click-to-select.
-import { beforeEach, describe, expect, it } from 'vitest';
+// Component tests for TickerRow (03-02 Task 1, 03-03 Task 2) — Tests 4 & 5
+// from 03-02-PLAN.md <behavior> (formatted price + flash class per direction,
+// key-remount on tickSeq change, click-to-select); Tests 6-8 from
+// 03-03-PLAN.md Task 2 <behavior> (Sparkline slot testid, per-ticker history
+// array isolation, update-on-append + remove-on-unmount via the setup.ts
+// lightweight-charts mock).
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import { createChart } from 'lightweight-charts';
 import type { PriceUpdate } from '../lib/types';
 import { useStore } from '../store/useStore';
 import { TickerRow } from '../components/watchlist/TickerRow';
+
+interface SeriesSpy {
+  setData: ReturnType<typeof vi.fn>;
+  update: ReturnType<typeof vi.fn>;
+}
+
+interface ChartSpy {
+  addSeries: ReturnType<typeof vi.fn>;
+  timeScale: ReturnType<typeof vi.fn>;
+  applyOptions: ReturnType<typeof vi.fn>;
+  remove: ReturnType<typeof vi.fn>;
+}
+
+const getCharts = (): ChartSpy[] =>
+  vi.mocked(createChart).mock.results.map((r) => r.value as unknown as ChartSpy);
+
+const getSeries = (chart: ChartSpy): SeriesSpy =>
+  chart.addSeries.mock.results[0].value as unknown as SeriesSpy;
 
 const frame = (overrides: Partial<PriceUpdate>): PriceUpdate => ({
   ticker: 'AAPL',
@@ -33,6 +55,7 @@ const resetStore = () =>
 
 beforeEach(() => {
   resetStore();
+  vi.mocked(createChart).mockClear();
 });
 
 describe('TickerRow', () => {
@@ -74,5 +97,42 @@ describe('TickerRow', () => {
     // clicking the row selects the ticker
     fireEvent.click(screen.getByText('AAPL'));
     expect(useStore.getState().selectedTicker).toBe('AAPL');
+  });
+
+  it('Test 6: renders the Sparkline container slot for its ticker', () => {
+    render(<TickerRow ticker="AAPL" />);
+    expect(screen.getByTestId('sparkline-AAPL')).toBeInTheDocument();
+    expect(screen.queryByTestId('sparkline-MSFT')).not.toBeInTheDocument();
+  });
+
+  it('Test 7: the Sparkline receives only its ticker history array', () => {
+    useStore.setState({ histories: { AAPL: [150.25, 151.0], MSFT: [400.0] } });
+    render(<TickerRow ticker="AAPL" />);
+
+    const chart = getCharts()[0];
+    const series = getSeries(chart);
+    // seeded from AAPL's array only — MSFT's points never reach this sparkline
+    expect(series.setData).toHaveBeenCalledWith([
+      { time: 0, value: 150.25 },
+      { time: 1, value: 151.0 },
+    ]);
+  });
+
+  it('Test 8: appending a history point streams via series.update; unmount removes the chart', () => {
+    useStore.setState({ histories: { AAPL: [150.25] } });
+    const { unmount } = render(<TickerRow ticker="AAPL" />);
+
+    const chart = getCharts()[0];
+    const series = getSeries(chart);
+    expect(series.setData).toHaveBeenCalledWith([{ time: 0, value: 150.25 }]);
+
+    act(() => {
+      useStore.getState().applyPrices({ AAPL: frame({ price: 151.0 }) });
+    });
+    // index-based time: the appended point lives at data.length - 1
+    expect(series.update).toHaveBeenCalledWith({ time: 1, value: 151.0 });
+
+    unmount();
+    expect(chart.remove).toHaveBeenCalledTimes(1);
   });
 });
