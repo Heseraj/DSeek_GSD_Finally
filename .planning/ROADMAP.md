@@ -108,7 +108,7 @@ The market-data subsystem is already built and tested. The remaining work delive
   3. Start/stop scripts are idempotent — safe to run repeatedly
   4. E2E tests pass for fresh start, watchlist add/remove, buy/sell, visualizations, mocked AI chat, and SSE reconnection
 
-**Plans**: 3/4 plans executed
+**Plans**: 4/4 plans executed
 **Wave 1**
 
 - [x] 04-01-PLAN.md — Backend contract (FINALLY_DB_PATH env read, app.frontend mount, fastapi 0.141.1 bump) + 3-stage Dockerfile + container tracer: build → run → SSE → restart persistence (DEPLOY-01, DEPLOY-02, DEPLOY-03)
@@ -120,7 +120,7 @@ The market-data subsystem is already built and tested. The remaining work delive
 
 **Wave 3**
 
-- [ ] 04-04-PLAN.md — Six E2E specs (fresh start, watchlist, trading, visualizations, chat, SSE reconnect) + full-suite gate (TEST-02)
+- [x] 04-04-PLAN.md — Six E2E specs (fresh start, watchlist, trading, visualizations, chat, SSE reconnect) + full-suite gate (TEST-02)
 
 ## Progress
 
@@ -132,4 +132,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Backend Foundation | 3/3 | Complete   | 2026-08-26 |
 | 2. AI Chat Assistant | 3/3 | Complete    | 2026-08-26 |
 | 3. Frontend Trading Terminal | 7/7 | Complete    | 2026-08-26 |
-| 4. Deployment & E2E | 3/4 | In Progress|  |
+| 4. Deployment & E2E | 4/4 | In Progress|  |

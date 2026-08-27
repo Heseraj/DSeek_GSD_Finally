@@ -63,7 +63,7 @@ Built in `backend/app/market/` (73 tests, 84% coverage). NOT rebuilt in this roa
 ### Testing (TEST)
 
 - [x] **TEST-01**: Playwright E2E infrastructure (`docker-compose.test.yml` + Playwright container, `LLM_MOCK=true`)
-- [ ] **TEST-02**: E2E scenarios cover fresh start, watchlist CRUD, buy/sell, visualizations, mocked AI chat, and SSE reconnection
+- [x] **TEST-02**: E2E scenarios cover fresh start, watchlist CRUD, buy/sell, visualizations, mocked AI chat, and SSE reconnection
 
 ## v2 Requirements
 
@@ -118,7 +118,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | DEPLOY-03 | Phase 4 | Complete |
 | DEPLOY-04 | Phase 4 | Complete |
 | TEST-01 | Phase 4 | Complete |
-| TEST-02 | Phase 4 | Pending |
+| TEST-02 | Phase 4 | Complete |
 
 **Coverage:**
 
