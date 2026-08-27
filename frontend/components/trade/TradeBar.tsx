@@ -7,7 +7,7 @@
 // clears. 400/404 backend rejections render as inline errors.
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { apiFetch } from '../../lib/api';
 import type { PortfolioResponse } from '../../lib/types';
 import { useStore } from '../../store/useStore';
@@ -23,15 +23,24 @@ function statusFromError(err: unknown): number | null {
 
 export function TradeBar() {
   const selectedTicker = useStore((s) => s.selectedTicker); // per-slice selector (Pitfall 6)
-  const [ticker, setTicker] = useState('');
+  // Pre-fill from a pre-selected ticker at mount, then keep in sync on changes
+  // (Test 5) — the React-recommended "adjust state during render" pattern (no
+  // effect, so react-hooks/set-state-in-effect stays quiet):
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [ticker, setTicker] = useState(selectedTicker ?? '');
   const [quantity, setQuantity] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  // Pre-fill the ticker input whenever the store's selected ticker changes (Test 5)
-  useEffect(() => {
+  // Pre-fill the ticker input whenever the store's selected ticker changes
+  // (Test 5) — the React-recommended "adjust state during render" pattern
+  // (no effect, so react-hooks/set-state-in-effect stays quiet):
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [prevSelected, setPrevSelected] = useState(selectedTicker);
+  if (prevSelected !== selectedTicker) {
+    setPrevSelected(selectedTicker);
     if (selectedTicker) setTicker(selectedTicker);
-  }, [selectedTicker]);
+  }
 
   const submit = async (side: 'buy' | 'sell') => {
     const t = ticker.trim().toUpperCase();
