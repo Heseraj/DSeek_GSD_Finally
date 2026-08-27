@@ -1,31 +1,21 @@
-// Component tests for WatchlistPanel (03-05 Task 3) — add (200/409) and remove
-// (204/404) with store pruning. Tests 1-5 from 03-05-PLAN.md <behavior>:
+// Component tests for WatchlistPanel (03-05 Task 3 + 03-06 Task 1) — the ADD
+// flow (200/409) with exact backend semantics. The REMOVE flow (raw DELETE
+// 204-prune / 404-tolerate) moved to the real TickerRow in 03-06 Task 1 and is
+// asserted at the composed-page level in TerminalApp.test.tsx (Remove
+// click-through on 204 and 404). Tests from 03-05-PLAN.md <behavior>:
 //   1. adding a valid ticker POSTs {ticker: 'IBM'} to /api/watchlist; on 200
 //      clears the input and refreshes the watchlist
 //   2. a 409 duplicate renders the inline 'already on watchlist' message and
 //      the watchlist is unchanged
-//   3. removing a ticker DELETEs /api/watchlist/IBM; on 204 the store prunes
-//      prices, histories, and tickSeq for that ticker (Pitfall 5)
-//   4. a 404 on delete renders an inline error and state is unchanged
 //   5. invalid ticker input (over 12 chars / whitespace) is blocked
 //      client-side without a fetch call
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { WatchlistPanel } from '../components/watchlist/WatchlistPanel';
-import type { PriceUpdate, WatchlistResponse } from '../lib/types';
+import type { WatchlistResponse } from '../lib/types';
 import { useStore } from '../store/useStore';
 
 const WATCHLIST: WatchlistResponse = { tickers: [{ ticker: 'IBM' }, { ticker: 'MSFT' }] };
-
-const frame = (ticker: string, price: number): PriceUpdate => ({
-  ticker,
-  price,
-  previous_price: price - 1,
-  timestamp: 1000,
-  change: 1,
-  change_percent: 0.01,
-  direction: 'up',
-});
 
 const jsonResponse = (status: number, body: unknown): Response =>
   ({ ok: status >= 200 && status < 300, status, json: async () => body }) as Response;
@@ -79,47 +69,19 @@ describe('WatchlistPanel', () => {
     expect(useStore.getState().watchlist).toEqual([{ ticker: 'IBM' }, { ticker: 'MSFT' }]);
   });
 
-  it('Test 3: removing a ticker DELETEs /api/watchlist/IBM; on 204 the store prunes that ticker', async () => {
-    useStore.setState({
-      prices: { IBM: frame('IBM', 150), MSFT: frame('MSFT', 300) },
-      histories: { IBM: [149, 150], MSFT: [299, 300] },
-      tickSeq: { IBM: 2, MSFT: 1 },
-    });
-    vi.mocked(fetch)
-      .mockResolvedValueOnce(jsonResponse(204, null)) // DELETE (no body)
-      .mockResolvedValueOnce(jsonResponse(200, { tickers: [{ ticker: 'MSFT' }] })); // GET refetch
+  it('Test 3: renders a real TickerRow per watchlist entry (row composition swap)', async () => {
     render(<WatchlistPanel />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Remove IBM' }));
-
-    await waitFor(() => {
-      expect(vi.mocked(fetch)).toHaveBeenCalledWith(
-        expect.stringContaining('/api/watchlist/IBM'),
-        expect.objectContaining({ method: 'DELETE' }),
-      );
-    });
-    // Pitfall 5: prices/histories/tickSeq pruned for the removed ticker only
-    await waitFor(() => {
-      const s = useStore.getState();
-      expect(s.prices.IBM).toBeUndefined();
-      expect(s.histories.IBM).toBeUndefined();
-      expect(s.tickSeq.IBM).toBeUndefined();
-      expect(s.prices.MSFT).toBeDefined();
-      expect(s.histories.MSFT).toEqual([299, 300]);
-    });
+    // TickerRow per entry: ticker text, per-row sparkline slot, remove button
+    expect(screen.getByText('IBM')).toBeInTheDocument();
+    expect(screen.getByText('MSFT')).toBeInTheDocument();
+    expect(screen.getByTestId('sparkline-IBM')).toBeInTheDocument();
+    expect(screen.getByTestId('sparkline-MSFT')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remove IBM' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remove MSFT' })).toBeInTheDocument();
   });
 
-  it('Test 4: a 404 on delete renders an inline error and state is unchanged', async () => {
-    vi.mocked(fetch).mockResolvedValue(jsonResponse(404, { detail: 'Ticker not on watchlist: IBM' }));
-    render(<WatchlistPanel />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Remove IBM' }));
-
-    expect(await screen.findByText('Ticker not on watchlist: IBM')).toBeInTheDocument();
-    expect(useStore.getState().watchlist).toEqual([{ ticker: 'IBM' }, { ticker: 'MSFT' }]);
-  });
-
-  it('Test 5: invalid ticker input (over 12 chars / whitespace) is blocked without a fetch', () => {
+  it('Test 4: invalid ticker input (over 12 chars / whitespace) is blocked without a fetch', () => {
     render(<WatchlistPanel />);
 
     fireEvent.change(screen.getByLabelText('Add ticker'), { target: { value: 'TOOLONGTICKER12' } });
