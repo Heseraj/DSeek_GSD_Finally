@@ -72,7 +72,7 @@ The market-data subsystem is already built and tested. The remaining work delive
   5. The chat panel sends messages, shows a loading state, and displays trade/watchlist confirmations inline
   6. Users can add and remove tickers from the watchlist UI
 
-**Plans**: 3/7 plans executed
+**Plans**: 4/7 plans executed
 **UI hint**: yes
 **Wave 1**
 
@@ -82,7 +82,7 @@ The market-data subsystem is already built and tested. The remaining work delive
 
 - [x] 03-02-PLAN.md — TRACER: SSE → store → flashing TickerRow → terminal shell + Header connection indicator (UI-01, UI-02, UI-07)
 - [x] 03-04-PLAN.md — Portfolio visuals: heatmap treemap, P&L chart, positions table with live prices (UI-03)
-- [ ] 03-05-PLAN.md — Controls: TradeBar buy/sell, ChatPanel (503 contract), WatchlistPanel add/remove (UI-04, UI-05, UI-06)
+- [x] 03-05-PLAN.md — Controls: TradeBar buy/sell, ChatPanel (503 contract), WatchlistPanel add/remove (UI-04, UI-05, UI-06)
 
 **Wave 3**
 
@@ -119,5 +119,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Backend Foundation | 3/3 | Complete   | 2026-08-26 |
 | 2. AI Chat Assistant | 3/3 | Complete    | 2026-08-26 |
-| 3. Frontend Trading Terminal | 3/7 | In Progress|  |
+| 3. Frontend Trading Terminal | 4/7 | In Progress|  |
 | 4. Deployment & E2E | 0/- | Not started | - |

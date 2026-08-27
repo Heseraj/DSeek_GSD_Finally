@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 3
 current_phase_name: Frontend Trading Terminal
 status: executing
-stopped_at: Completed 03-04-PLAN.md
-last_updated: "2026-08-27T00:21:53.097Z"
+stopped_at: Completed 03-05-PLAN.md
+last_updated: "2026-08-27T00:37:46.207Z"
 last_activity: 2026-08-26
 last_activity_desc: Phase 3 execution started
-state_head: 7a3892ae8ce4e977f9e3ce075771902a91ecf133
+state_head: 295b89e63baf46f4fda186669a1e6e9bd19c2eee
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 13
-  completed_plans: 9
+  completed_plans: 10
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-08-25)
 ## Current Position
 
 Phase: 3 (Frontend Trading Terminal) — EXECUTING
-Plan: 4 of 7
+Plan: 5 of 7
 Status: Ready to execute
 Last activity: 2026-08-26 — Phase 3 execution started
 
@@ -67,6 +67,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P01 | 50 | 3 tasks | 27 files |
 | Phase 03 P02 | 16 | 2 tasks | 8 files |
 | Phase 03-frontend-trading-terminal P04 | 9 | 3 tasks | 6 files |
+| Phase 03 P05 | 10 | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,10 @@ Recent decisions affecting current work:
 - [Phase 3]: PnlChart XAxis tickFormatter renders HH:MM in UTC - deterministic test assertions regardless of machine timezone
 - [Phase 3]: Recharts-in-jsdom: stub ResizeObserver with a synchronous fixed-size fire (640x192) per chart test file - ResponsiveContainer renders only once width/height are positive
 - [Phase 3]: PnlChart fetch errors keep the last data; the 30s poll self-heals (no error UI)
+- [Phase 03]: TradeBar ticker pre-fill uses the React 'adjust state during render' pattern (track prevSelected, initialize state from selectedTicker) instead of a useEffect - the next 16 / react 19 react-hooks/set-state-in-effect lint rule rejects setState in effects; the mount pre-fill survives because state initializes from the store value — TradeBar ticker pre-fill uses the React 'adjust state during render' pattern (track prevSelected, initialize state from selectedTicker) instead of a useEffect - the next 16 / react 19 react-hooks/set-state-in-effect lint rule rejects setState in effects; the mount pre-fill survives because state initializes from the store value
+- [Phase 03]: ChatPanel refetches portfolio+watchlist with .catch(() => {}) so a refetch failure after a successful chat response cannot mislabel the turn as a network-error banner — ChatPanel refetches portfolio+watchlist with .catch(() => {}) so a refetch failure after a successful chat response cannot mislabel the turn as a network-error banner
+- [Phase 03]: Confirmations render only from the structured trades/watchlist_changes fields (never from message text); LLM message/error render as React text children - T-03-01 mitigated (XSS test asserts zero parsed elements) — Confirmations render only from the structured trades/watchlist_changes fields (never from message text); LLM message/error render as React text children - T-03-01 mitigated (XSS test asserts zero parsed elements)
+- [Phase 03]: WatchlistPanel DELETE uses a raw fetch with a res.status check before ANY body read - apiFetch's unconditional res.json() rejects on the backend's 204 empty body (03-PATTERNS.md:143); the 204 branch never touches the body — WatchlistPanel DELETE uses a raw fetch with a res.status check before ANY body read - apiFetch's unconditional res.json() rejects on the backend's 204 empty body (03-PATTERNS.md:143); the 204 branch never touches the body
 
 ### Pending Todos
 
@@ -123,6 +128,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-27T00:21:52.761Z
-Stopped at: Completed 03-04-PLAN.md
+Last session: 2026-08-27T00:36:55.284Z
+Stopped at: Completed 03-05-PLAN.md
 Resume file: None
