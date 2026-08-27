@@ -10,7 +10,7 @@ import { useStore } from '../store/useStore';
 import { usePriceStream } from '../hooks/usePriceStream';
 import { MockEventSource } from './setup';
 
-const frame = (overrides: Partial<PriceUpdate>): PriceUpdate => ({
+const frame = (overrides: Partial<PriceUpdate> = {}): PriceUpdate => ({
   ticker: 'AAPL',
   price: 150.25,
   previous_price: 149.8,
