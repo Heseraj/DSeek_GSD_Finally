@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 3
 current_phase_name: Frontend Trading Terminal
 status: executing
-stopped_at: Completed 03-05-PLAN.md
-last_updated: "2026-08-27T00:37:46.207Z"
+stopped_at: Completed 03-03-PLAN.md
+last_updated: "2026-08-27T00:53:53.287Z"
 last_activity: 2026-08-26
 last_activity_desc: Phase 3 execution started
-state_head: 295b89e63baf46f4fda186669a1e6e9bd19c2eee
+state_head: e8962e7c38c1bb752beaa44498a4ebd9cc578c8e
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 13
-  completed_plans: 10
+  completed_plans: 11
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-08-25)
 ## Current Position
 
 Phase: 3 (Frontend Trading Terminal) — EXECUTING
-Plan: 5 of 7
+Plan: 6 of 7
 Status: Ready to execute
 Last activity: 2026-08-26 — Phase 3 execution started
 
@@ -68,6 +68,7 @@ Progress: [█████░░░░░] 50%
 | Phase 03 P02 | 16 | 2 tasks | 8 files |
 | Phase 03-frontend-trading-terminal P04 | 9 | 3 tasks | 6 files |
 | Phase 03 P05 | 10 | 3 tasks | 6 files |
+| Phase 03-frontend-trading-terminal P03 | 11 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -109,6 +110,8 @@ Recent decisions affecting current work:
 - [Phase 03]: ChatPanel refetches portfolio+watchlist with .catch(() => {}) so a refetch failure after a successful chat response cannot mislabel the turn as a network-error banner — ChatPanel refetches portfolio+watchlist with .catch(() => {}) so a refetch failure after a successful chat response cannot mislabel the turn as a network-error banner
 - [Phase 03]: Confirmations render only from the structured trades/watchlist_changes fields (never from message text); LLM message/error render as React text children - T-03-01 mitigated (XSS test asserts zero parsed elements) — Confirmations render only from the structured trades/watchlist_changes fields (never from message text); LLM message/error render as React text children - T-03-01 mitigated (XSS test asserts zero parsed elements)
 - [Phase 03]: WatchlistPanel DELETE uses a raw fetch with a res.status check before ANY body read - apiFetch's unconditional res.json() rejects on the backend's 204 empty body (03-PATTERNS.md:143); the 204 branch never touches the body — WatchlistPanel DELETE uses a raw fetch with a res.status check before ANY body read - apiFetch's unconditional res.json() rejects on the backend's 204 empty body (03-PATTERNS.md:143); the 204 branch never touches the body
+- [Phase 03]: MainChart subscribes three per-slice selectors (selectedTicker + its history + its latest PriceUpdate) — update() needs Math.floor(timestamp), and the PriceUpdate frame is its only carrier; per-slice isolation preserved — 03-03 Task 1 — the plan prose named two selectors, but the streaming boundary requires the frame timestamp
+- [Phase 03]: Sparkline data prop optional (default []) so useStore(s => s.histories[ticker])'s stable undefined never fabricates a new [] per render at 20Hz — 03-03 Task 2 — zustand selector churn (Pitfall 6)
 
 ### Pending Todos
 
@@ -128,6 +131,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-27T00:36:55.284Z
-Stopped at: Completed 03-05-PLAN.md
+Last session: 2026-08-27T00:53:52.963Z
+Stopped at: Completed 03-03-PLAN.md
 Resume file: None

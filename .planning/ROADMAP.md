@@ -72,7 +72,7 @@ The market-data subsystem is already built and tested. The remaining work delive
   5. The chat panel sends messages, shows a loading state, and displays trade/watchlist confirmations inline
   6. Users can add and remove tickers from the watchlist UI
 
-**Plans**: 4/7 plans executed
+**Plans**: 5/7 plans executed
 **UI hint**: yes
 **Wave 1**
 
@@ -86,7 +86,7 @@ The market-data subsystem is already built and tested. The remaining work delive
 
 **Wave 3**
 
-- [ ] 03-03-PLAN.md — Charting: useLightweightChart hook, MainChart (selected ticker), sparklines (UI-01, UI-03)
+- [x] 03-03-PLAN.md — Charting: useLightweightChart hook, MainChart (selected ticker), sparklines (UI-01, UI-03)
 
 **Wave 4**
 
@@ -119,5 +119,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Backend Foundation | 3/3 | Complete   | 2026-08-26 |
 | 2. AI Chat Assistant | 3/3 | Complete    | 2026-08-26 |
-| 3. Frontend Trading Terminal | 4/7 | In Progress|  |
+| 3. Frontend Trading Terminal | 5/7 | In Progress|  |
 | 4. Deployment & E2E | 0/- | Not started | - |
