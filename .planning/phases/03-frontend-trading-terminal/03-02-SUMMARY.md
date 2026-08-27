@@ -126,7 +126,7 @@ Each task was committed atomically (TDD RED → GREEN):
 
 **Follow-up fix:** `287c88a` (fix) — test frame factory `overrides` made optional for the tsc gate.
 
-**Plan metadata:** `pending` (docs: complete realtime tracer plan)
+**Plan metadata:** `70f824b` (docs: complete realtime tracer plan)
 
 _Note: both tasks followed the RED→GREEN cycle; no refactor commits needed (implementations were minimal on first pass). The tracer feedback gate re-ran Task 1's `<verify>` end-to-end (10 targeted tests + build) before Task 2 — passed._
 
