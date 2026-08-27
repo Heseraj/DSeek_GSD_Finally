@@ -10,9 +10,9 @@
 // Test 3 pins the empty state.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import type { TreemapNode } from 'recharts';
 import { useStore } from '../store/useStore';
 import { Heatmap } from '../components/portfolio/Heatmap';
-import type { HeatmapNodeProps } from '../components/portfolio/Heatmap';
 import type { Position } from '../lib/types';
 
 // Recharts 3.10.1 ResponsiveContainer renders its chart only once width/height
@@ -26,7 +26,7 @@ class MockResizeObserver {
     this.callback = callback;
   }
 
-  observe(_target: Element) {
+  observe() {
     this.callback(
       [{ contentRect: { width: 640, height: 192 } } as ResizeObserverEntry],
       this as unknown as ResizeObserver,
@@ -80,12 +80,10 @@ describe('Heatmap', () => {
         unrealized_pnl: 100,
       },
     });
-    const spy = vi.fn(() => null);
+    const spy = vi.fn((props: TreemapNode) => <g data-depth={props.depth} />);
     render(<Heatmap content={spy} />);
 
-    const leaves = spy.mock.calls
-      .map((c) => c[0] as HeatmapNodeProps)
-      .filter((p) => p.depth === 1);
+    const leaves = spy.mock.calls.map((c) => c[0]).filter((p) => p.depth === 1);
     expect(leaves).toHaveLength(2);
     const byName = Object.fromEntries(leaves.map((l) => [l.name, l]));
     expect(byName.AAPL).toMatchObject({ name: 'AAPL', size: 5000, pnl: 250 });

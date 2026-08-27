@@ -19,7 +19,7 @@ class MockResizeObserver {
     this.callback = callback;
   }
 
-  observe(_target: Element) {
+  observe() {
     this.callback(
       [{ contentRect: { width: 640, height: 192 } } as ResizeObserverEntry],
       this as unknown as ResizeObserver,

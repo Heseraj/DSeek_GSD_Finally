@@ -7,28 +7,15 @@
 'use client';
 
 import { Treemap, ResponsiveContainer } from 'recharts';
+import type { TreemapContentType, TreemapNode } from 'recharts';
 import { useStore } from '../../store/useStore';
 import { fmtCurrency } from '../../lib/format';
 
-// Node props Recharts hands a custom Treemap content renderer. Leaf nodes
-// (depth 1) carry the mapped data fields {name, size, pnl} plus layout
-// coordinates (Treemap.js computeNode: spreads the original data item).
-export interface HeatmapNodeProps {
-  name?: string;
-  size?: number;
-  pnl?: number;
-  depth?: number;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  children?: HeatmapNodeProps[];
-  [key: string]: unknown;
-}
-
-export type HeatmapContent =
-  | React.ReactElement
-  | ((props: HeatmapNodeProps) => React.ReactNode);
+// Recharts hands the custom Treemap content renderer the squarified node —
+// leaf nodes carry the mapped data fields {name, size, pnl} plus layout
+// coordinates (Treemap.js computeNode spreads the original data item). The
+// `size`/`pnl` fields ride the node's index signature.
+export type HeatmapContent = TreemapContentType;
 
 // Pnl color scale — emerald/red alpha-scaled by |pnl|/maxAbsPnl, gray for zero
 // (03-PATTERNS.md:263-273). Alphas are injected into rgba() strings so the
@@ -37,16 +24,10 @@ const GREEN_RGB = '16,185,129'; // emerald-500
 const RED_RGB = '239,68,68'; // red-500
 const ZERO_FILL = '#30363d'; // zero-pnl cell — dark panel tone
 
-function HeatmapCell({
-  x,
-  y,
-  width,
-  height,
-  name,
-  size,
-  pnl = 0,
-  maxAbsPnl = 0,
-}: HeatmapNodeProps & { maxAbsPnl?: number }) {
+function HeatmapCell(props: Partial<TreemapNode> & { maxAbsPnl?: number }) {
+  const { x, y, width, height, name, maxAbsPnl = 0 } = props;
+  const size = props.size as number | undefined; // data item field via index signature
+  const pnl = (props.pnl as number | undefined) ?? 0;
   const alpha = maxAbsPnl > 0 ? Math.abs(pnl) / maxAbsPnl : 0;
   const fill =
     pnl > 0
