@@ -1,0 +1,14 @@
+# Build-context exclusions (04-RESEARCH.md:137-139 required set)
+# frontend/.env.local is critical: NEXT_PUBLIC_API_BASE would be inlined
+# into the production export, breaking same-origin /api/* (Pitfall 3).
+.git
+**/node_modules
+frontend/.next
+frontend/out
+frontend/.env.local
+backend/.venv
+**/__pycache__
+.pytest_cache
+.ruff_cache
+.planning/
+.env
