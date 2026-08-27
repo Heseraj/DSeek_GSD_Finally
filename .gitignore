@@ -61,6 +61,11 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
+# FinAlly runtime SQLite database (created on backend boot, relative to backend/)
+backend/db/
+db/finally.db
+db/finally.db-journal
+
 # Flask stuff:
 instance/
 .webassets-cache
