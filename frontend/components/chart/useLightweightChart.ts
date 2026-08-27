@@ -61,7 +61,7 @@ export function useLightweightChart(
       chartRef.current = null;
       seriesRef.current = null;
     };
-  }, [height, lineColor, topColor, bottomColor]);
+  }, [height, lineColor, topColor, bottomColor, containerRef]);
 
   return { chartRef, seriesRef };
 }

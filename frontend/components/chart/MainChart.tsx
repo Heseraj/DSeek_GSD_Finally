@@ -58,7 +58,7 @@ export function MainChart() {
       series.update({ time, value: history[history.length - 1] });
       lastTimeRef.current[selectedTicker] = time;
     }
-  }, [selectedTicker, history, lastUpdate]);
+  }, [selectedTicker, history, lastUpdate, chartRef, seriesRef]);
 
   return <div ref={containerRef} className="h-96 w-full" />;
 }

@@ -30,7 +30,7 @@ export function Sparkline({ ticker, data = [] }: { ticker: string; data?: number
 
     // appended point — its index is data.length - 1
     series.update({ time: (data.length - 1) as UTCTimestamp, value: data[data.length - 1] });
-  }, [data]);
+  }, [data, seriesRef]);
 
   return <div ref={containerRef} data-testid={`sparkline-${ticker}`} className="h-8" />;
 }
