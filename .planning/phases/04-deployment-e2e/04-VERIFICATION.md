@@ -1,7 +1,7 @@
 ---
 phase: 04-deployment-e2e
-verified: 2026-08-26T00:00:00Z
-status: human_needed
+verified: 2026-08-27T07:00:00Z
+status: passed
 score: 15/15 must-haves verified
 behavior_unverified: 0
 overrides_applied: 0
@@ -9,16 +9,18 @@ human_verification:
   - test: "Run scripts/start_mac.sh twice consecutively, then scripts/stop_mac.sh, then scripts/start_mac.sh again on a real macOS/Linux host; make a trade before the stop and confirm it survives the stop -> start cycle"
     expected: "Both start invocations exit 0; stop leaves 0 containers but the finally-data volume is retained; the pre-stop trade is visible after the final start (cash < 10000)"
     why_human: "The sh scripts were WSL-syntax-validated and logic-mirrored against the functionally-proven ps1 pair, but never executed on an actual macOS/Linux host (04-02 coverage D1 marks human_judgment: true; 04-VALIDATION.md Manual-Only table)"
+    result: "SKIPPED — no macOS/Linux host available (Windows-only verification machine); WSL bash -n exit 0 + logic-mirror evidence recorded; user confirmed skip in 04-UAT.md"
   - test: "Run the start/stop lifecycle interactively on Windows (start_windows.ps1 -> trade -> stop_windows.ps1 -> start_windows.ps1) and confirm the repeated-interactive UX is error-free"
     expected: "No errors on any invocation; the URL is printed only after /api/health responds; the pre-stop trade survives through finally-data"
     why_human: "04-VALIDATION.md lists 'repeated-interactive semantics' as manual-only — automated runs cover exit codes but not interactive shell-script UX feel"
+    result: "PASSED — live: start exit 0 (URL after health), buy 3 AAPL (cash 7910.26 -> 7340.17), stop exit 0 (0 containers, volume retained), start again exit 0 (cash 7340.17 — trade survived). Recorded in 04-UAT.md"
 ---
 
 # Phase 4: Deployment & E2E Verification Report
 
 **Phase Goal:** One command deploys the full app in a single Docker container with a persistent database, and Playwright E2E tests prove the core flows.
 **Verified:** 2026-08-26
-**Status:** human_needed (all 15 automated truths VERIFIED; 2 plan-deferred manual sign-offs remain)
+**Status:** passed (all 15 automated truths VERIFIED; 1/2 manual items passed, 1/2 skipped — no mac/Linux host; both dispositions recorded in 04-UAT.md)
 **Re-verification:** No — initial verification
 
 ## Goal Achievement
