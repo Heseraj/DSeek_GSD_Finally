@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -29,8 +30,9 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # Location of the SQLite database file (relative to the working directory).
+# FINALLY_DB_PATH makes the Docker volume mount explicit (finally-data:/app/db).
 # Tests override this module attribute before booting the app.
-DB_PATH: str = "db/finally.db"
+DB_PATH: str = os.environ.get("FINALLY_DB_PATH", "db/finally.db")
 
 # The default universe of tickers; shared by the market data source and the DB seed.
 DEFAULT_TICKERS: list[str] = list(SEED_PRICES.keys())
@@ -77,6 +79,11 @@ app.include_router(create_stream_router(price_cache))
 app.include_router(portfolio_router)
 app.include_router(watchlist_router)
 app.include_router(chat_router)
+
+# Serve the Next.js static export at /. Path operations (/api/*) take priority.
+# check_dir=False keeps app.main importable in backend-only contexts (pytest,
+# dev uvicorn without a frontend build) — the default "auto" raises at import.
+app.frontend("/", directory="static", check_dir=False)
 
 # DEV ONLY — assumption A1 (user-confirmed): unlocks next dev :3000 -> FastAPI :8000.
 # Inert in production (static-export builds are same-origin; CORS never exercised).
