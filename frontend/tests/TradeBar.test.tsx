@@ -77,7 +77,10 @@ describe('TradeBar', () => {
     fillAndSubmit('AAPL', '5', 'Buy');
 
     await waitFor(() => expect(useStore.getState().portfolio).toEqual(PORTFOLIO));
-    expect(screen.getByLabelText('Quantity')).toHaveValue('');
+    // type="number" inputs report empty as null to toHaveValue — assert the raw value
+    await waitFor(() => {
+      expect((screen.getByLabelText('Quantity') as HTMLInputElement).value).toBe('');
+    });
   });
 
   it('Test 3a: a 400 (insufficient) renders an inline error message', async () => {
