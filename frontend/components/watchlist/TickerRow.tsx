@@ -2,12 +2,13 @@
 // 03-PATTERNS.md:223-236). Per-row selectors ONLY (Pitfall 6): a 20Hz tick
 // stream re-renders just this row. The price span is keyed by per-ticker
 // tickSeq so a direction-changing frame remounts the element and restarts the
-// CSS flash animation. Remove button + sparkline slot are wired in 03-05/03-03.
+// CSS flash animation. Remove button wired in 03-05; sparkline embedded in 03-03.
 'use client';
 
 import { useStore } from '../../store/useStore';
 import { fmtCurrency, fmtPercent, pnlColor } from '../../lib/format';
 import type { PriceUpdate } from '../../lib/types';
+import { Sparkline } from './Sparkline';
 
 function flashClass(direction: PriceUpdate['direction']): string {
   if (direction === 'up') return 'flash-up';
@@ -30,8 +31,8 @@ export function TickerRow({ ticker }: { ticker: string }) {
     >
       <div className="flex min-w-0 flex-col">
         <span className="font-mono text-sm font-semibold text-foreground">{ticker}</span>
-        {/* Sparkline slot — 03-03 fills this with the real lightweight-charts Sparkline */}
-        <div data-testid={`sparkline-${ticker}`} className="h-8" />
+        {/* Sparkline — receives only this ticker's history array (Pitfall 6) */}
+        <Sparkline ticker={ticker} data={useStore((s) => s.histories[ticker])} />
       </div>
 
       <div className="flex flex-col items-end">
