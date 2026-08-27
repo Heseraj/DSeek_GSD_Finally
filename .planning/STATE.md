@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 current_phase: 3
 current_phase_name: Frontend Trading Terminal
 status: executing
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-08-27T00:04:33.192Z"
+stopped_at: Completed 03-04-PLAN.md
+last_updated: "2026-08-27T00:21:53.097Z"
 last_activity: 2026-08-26
 last_activity_desc: Phase 3 execution started
-state_head: 287c88a69c76a8a482219f6a730d0f4122fd1e78
+state_head: 7a3892ae8ce4e977f9e3ce075771902a91ecf133
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 13
-  completed_plans: 8
+  completed_plans: 9
   percent: 50
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-08-25)
 ## Current Position
 
 Phase: 3 (Frontend Trading Terminal) — EXECUTING
-Plan: 3 of 7
+Plan: 4 of 7
 Status: Ready to execute
 Last activity: 2026-08-26 — Phase 3 execution started
 
@@ -66,6 +66,7 @@ Progress: [█████░░░░░] 50%
 | Phase 02 P03 | 8 | 2 tasks | 4 files |
 | Phase 03 P01 | 50 | 3 tasks | 27 files |
 | Phase 03 P02 | 16 | 2 tasks | 8 files |
+| Phase 03-frontend-trading-terminal P04 | 9 | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,10 @@ Recent decisions affecting current work:
 - [Phase 03]: XSS guard asserted element-level (no img/script elements, no [onerror] attributes) instead of innerHTML substrings — React serializes attribute VALUES raw in innerHTML, but browsers never parse attribute values as markup; element-level queries are the true security property
 - [Phase 03]: RTL cleanup registered centrally in tests/setup.ts (afterEach(cleanup)) — vitest globals are off so RTL auto-cleanup never fired; leaked mounted components stayed subscribed to the shared store and re-rendered on later tests' setState
 - [Phase 03]: header-slot wrapper div retained in page.tsx across the Task 1 placeholder -> Task 2 <Header /> swap — keeps the shell's five data-testid slots stable for TerminalApp assertions
+- [Phase 3]: Heatmap content prop typed as recharts' exported TreemapContentType; HeatmapCell consumes Partial<TreemapNode> + maxAbsPnl (Recharts delivers nodeProps via cloneElement)
+- [Phase 3]: PnlChart XAxis tickFormatter renders HH:MM in UTC - deterministic test assertions regardless of machine timezone
+- [Phase 3]: Recharts-in-jsdom: stub ResizeObserver with a synchronous fixed-size fire (640x192) per chart test file - ResponsiveContainer renders only once width/height are positive
+- [Phase 3]: PnlChart fetch errors keep the last data; the 30s poll self-heals (no error UI)
 
 ### Pending Todos
 
@@ -118,6 +123,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-08-27T00:04:13.285Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-08-27T00:21:52.761Z
+Stopped at: Completed 03-04-PLAN.md
 Resume file: None
