@@ -145,7 +145,7 @@ Each task was committed atomically:
 1. **Task 1: 01-fresh-start, 02-watchlist, 03-trading specs + targeted run** - `4d3aa24` (test: 3 specs + compose baseURL fixes)
 2. **Task 2: 04-visualizations, 05-chat, 06-sse-reconnect specs + full-suite gate** - `4e946c5` (test: 3 specs, full suite green)
 
-**Plan metadata:** `5b8e12b` (docs: complete plan)
+**Plan metadata:** `ccf50cf` (docs: complete plan)
 
 ## Files Created/Modified
 
