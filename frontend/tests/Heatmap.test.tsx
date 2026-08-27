@@ -123,13 +123,14 @@ describe('Heatmap', () => {
     const { container } = render(<Heatmap />);
     expect(screen.getByText('No positions')).toBeInTheDocument();
     expect(container.querySelector('.recharts-treemap')).toBeNull();
+  });
 
-    // empty positions array — same empty state, never crashes
-    resetStore();
+  it('Test 3b: an empty positions array renders the same empty state (never crashes)', () => {
     useStore.setState({
       portfolio: { cash_balance: 1000, positions: [], total_value: 1000, unrealized_pnl: 0 },
     });
-    render(<Heatmap />);
-    expect(screen.getAllByText('No positions')).toHaveLength(1);
+    const { container } = render(<Heatmap />);
+    expect(screen.getByText('No positions')).toBeInTheDocument();
+    expect(container.querySelector('.recharts-treemap')).toBeNull();
   });
 });
